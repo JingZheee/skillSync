@@ -14,8 +14,12 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import GroupsIcon from '@mui/icons-material/Groups';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function CompanyDashboard() {
+  const router = useRouter();
+
   // Example data - replace with actual data from your backend
   const stats = [
     {
@@ -43,6 +47,10 @@ export default function CompanyDashboard() {
       change: "+45 this month"
     }
   ];
+
+  const handleNavigation = (path) => {
+    router.push(path);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -96,11 +104,32 @@ export default function CompanyDashboard() {
                   sx={{ 
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 0.5
+                    gap: 0.5,
+                    mb: stat.title === "Total Participants" ? 2 : 0
                   }}
                 >
                   {stat.change}
                 </Typography>
+                {stat.title === "Total Participants" && (
+                  <Link href="../company/talentpool" passHref>
+                    <Button 
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{
+                        mt: 1,
+                        borderColor: '#9c27b0',
+                        color: '#9c27b0',
+                        '&:hover': {
+                          borderColor: '#7b1fa2',
+                          backgroundColor: 'rgba(156, 39, 176, 0.04)'
+                        }
+                      }}
+                    >
+                      View Talents
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           </Grid>
@@ -118,6 +147,7 @@ export default function CompanyDashboard() {
               variant="contained" 
               fullWidth
               sx={{ height: '48px' }}
+              onClick={() => handleNavigation('/company/challenges/create')}
             >
               Post New Challenge
             </Button>
@@ -127,6 +157,7 @@ export default function CompanyDashboard() {
               variant="contained" 
               fullWidth
               sx={{ height: '48px' }}
+              onClick={() => handleNavigation('/company/courses/upload')}
             >
               Create Course
             </Button>
@@ -136,6 +167,7 @@ export default function CompanyDashboard() {
               variant="contained" 
               fullWidth
               sx={{ height: '48px' }}
+              onClick={() => handleNavigation('/company/hackathon/create')}
             >
               Schedule Hackathon
             </Button>

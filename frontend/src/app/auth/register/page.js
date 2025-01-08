@@ -63,7 +63,7 @@ export default function Register() {
             SkillSync
           </Typography>
           <Typography variant="body1" color="textSecondary" textAlign="center" gutterBottom>
-            Login your account to get started
+            Register your account to get started
           </Typography>
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>

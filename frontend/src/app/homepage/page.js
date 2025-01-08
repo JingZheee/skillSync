@@ -17,7 +17,9 @@ import {
     Card,
     CardContent,
     CardActions,
-    Chip
+    Chip,
+    FormControl,
+    Select
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
@@ -31,6 +33,21 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 import { useRouter } from 'next/navigation';
 
 // New array-based data structure
@@ -118,9 +135,256 @@ export default function Homepage() {
 
   const router = useRouter();
 
+  const [selectedFieldForSkills, setSelectedFieldForSkills] = useState('Technology');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('Web Development');
+
+  // Data for bar chart (trending skills) using subcategories
+  const [trendingSkillsData] = useState({
+    Technology: [
+      { name: 'Web Development', growth: 75 },
+      { name: 'Mobile Development', growth: 70 },
+      { name: 'Cloud Computing', growth: 65 },
+      { name: 'Data Science', growth: 60 },
+      { name: 'Cybersecurity', growth: 55 },
+    ],
+    Business: [
+      { name: 'Strategy', growth: 70 },
+      { name: 'Operations', growth: 65 },
+      { name: 'Management', growth: 60 },
+      { name: 'Entrepreneurship', growth: 55 },
+    ],
+    Finance: [
+      { name: 'Investment', growth: 70 },
+      { name: 'FinTech', growth: 65 },
+      { name: 'Risk Management', growth: 60 },
+      { name: 'Trading', growth: 55 },
+    ],
+    Design: [
+      { name: 'UI/UX', growth: 70 },
+      { name: 'Graphic Design', growth: 65 },
+      { name: 'Product Design', growth: 60 },
+      { name: 'Brand Design', growth: 55 },
+    ],
+    Marketing: [
+      { name: 'Digital Marketing', growth: 70 },
+      { name: 'Content Marketing', growth: 65 },
+      { name: 'Social Media', growth: 60 },
+      { name: 'SEO', growth: 55 },
+    ],
+  });
+
+  const categoryConfig = {
+    Technology: {
+      subCategories: ['Web Development', 'Mobile Development', 'Cloud Computing', 'Data Science', 'Cybersecurity'],
+      skills: ['JavaScript', 'Python', 'React', 'Node.js', 'AWS', 'Machine Learning'],
+    },
+    Business: {
+      subCategories: ['Strategy', 'Operations', 'Management', 'Entrepreneurship'],
+      skills: ['Business Analysis', 'Project Management', 'Strategic Planning', 'Leadership'],
+    },
+    Finance: {
+      subCategories: ['Investment', 'FinTech', 'Risk Management', 'Trading'],
+      skills: ['Financial Analysis', 'Risk Assessment', 'Blockchain', 'Trading Strategies'],
+    },
+    Design: {
+      subCategories: ['UI/UX', 'Graphic Design', 'Product Design', 'Brand Design'],
+      skills: ['UI Design', 'User Research', 'Wireframing', 'Prototyping'],
+    },
+    Marketing: {
+      subCategories: ['Digital Marketing', 'Content Marketing', 'Social Media', 'SEO'],
+      skills: ['Social Media Marketing', 'Content Strategy', 'Analytics', 'SEO Optimization'],
+    }
+  };
+
+  // Update the orange color palette
+  const ORANGE_COLORS = [
+    '#A83000',
+    '#D53C00', // Dark orange
+    '#FD6E00',
+    '#FBAC01',
+    '#FFC23D',
+  ];
+
+  // Helper function to get skills data for pie chart with different percentages
+  const getSkillsData = (field, subCategory) => {
+    const subCategorySkillsData = {
+      'Web Development': [
+        { name: 'JavaScript', value: 20 },
+        { name: 'Python', value: 30 },
+        { name: 'React', value: 40 },
+        { name: 'Node.js', value: 10 },
+      ],
+      'Mobile Development': [
+        { name: 'React Native', value: 35 },
+        { name: 'Flutter', value: 25 },
+        { name: 'Swift', value: 20 },
+        { name: 'Kotlin', value: 20 },
+      ],
+      'Cloud Computing': [
+        { name: 'AWS', value: 40 },
+        { name: 'Azure', value: 30 },
+        { name: 'Docker', value: 20 },
+        { name: 'Kubernetes', value: 10 },
+      ],
+      'Data Science': [
+        { name: 'Python', value: 35 },
+        { name: 'R', value: 25 },
+        { name: 'SQL', value: 25 },
+        { name: 'Tableau', value: 15 },
+      ],
+      'Cybersecurity': [
+        { name: 'Network Security', value: 30 },
+        { name: 'Cryptography', value: 25 },
+        { name: 'Ethical Hacking', value: 25 },
+        { name: 'Security Tools', value: 20 },
+      ],
+      'Strategy': [
+        { name: 'Strategic Planning', value: 40 },
+        { name: 'Market Analysis', value: 30 },
+        { name: 'Risk Management', value: 30 },
+      ],
+      'Operations': [
+        { name: 'Process Optimization', value: 35 },
+        { name: 'Quality Management', value: 35 },
+        { name: 'Supply Chain', value: 30 },
+      ],
+      'Management': [
+        { name: 'Leadership', value: 40 },
+        { name: 'Team Management', value: 30 },
+        { name: 'Project Management', value: 30 },
+      ],
+      'Entrepreneurship': [
+        { name: 'Business Planning', value: 35 },
+        { name: 'Innovation', value: 35 },
+        { name: 'Marketing', value: 30 },
+      ]
+    };
+
+    // Return specific data for the selected subcategory
+    return subCategorySkillsData[subCategory] || [];
+  };
+
+  // Update selectedSubCategory when field changes
+  const handleFieldChange = (event) => {
+    const newField = event.target.value;
+    setSelectedFieldForSkills(newField);
+    // Automatically set to first subcategory of new field
+    setSelectedSubCategory(categoryConfig[newField].subCategories[0]);
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ minHeight: 'calc(100vh - 64px)', py: 4 }}>
+        {/* Skills Analytics Section */}
+        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
+          <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
+            Skills Analytics
+          </Typography>
+
+          <Grid container spacing={3}>
+            {/* Trending Skills Section */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Box>
+                      <Box display="flex" alignItems="center">
+                        <TrendingUpIcon sx={{ mr: 1 }} />
+                        <Typography variant="h6">Trending Skills</Typography>
+                      </Box>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 0.5, mb: 2, fontStyle: 'italic' }}>
+                        Trending subcategories for each field
+                      </Typography>
+                    </Box>
+                    <FormControl size="small" sx={{ minWidth: 200 }}>
+                      <Select
+                        value={selectedFieldForSkills}
+                        onChange={handleFieldChange}
+                        sx={{ height: 40 }}
+                      >
+                        {Object.keys(categoryConfig).map((field) => (
+                          <MenuItem key={field} value={field}>
+                            {field}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart 
+                      data={trendingSkillsData[selectedFieldForSkills]} 
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis 
+                        dataKey="name" 
+                        angle={-45} 
+                        textAnchor="end" 
+                        height={60} 
+                        interval={0}
+                      />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Bar dataKey="growth" fill="#ff9800" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Skills Popularity Section */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Box>
+                      <Box display="flex" alignItems="center">
+                        <PieChartIcon sx={{ mr: 1 }} />
+                        <Typography variant="h6">Skill Popularity</Typography>
+                      </Box>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 0.5, mb: 2, fontStyle: 'italic' }}>
+                        Popularity of Skills for selected subcategory
+                      </Typography>
+                    </Box>
+                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                      <Select
+                        value={selectedSubCategory}
+                        onChange={(e) => setSelectedSubCategory(e.target.value)}
+                        sx={{ height: 40 }}
+                      >
+                        {categoryConfig[selectedFieldForSkills].subCategories.map((subCat) => (
+                          <MenuItem key={subCat} value={subCat}>
+                            {subCat}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={getSkillsData(selectedFieldForSkills, selectedSubCategory)}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                        outerRadius={100}
+                        dataKey="value"
+                      >
+                        {getSkillsData(selectedFieldForSkills, selectedSubCategory).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ORANGE_COLORS[index % ORANGE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Legend formatter={(value) => <span style={{ color: '#000000' }}>{value}</span>} />
+                      <RechartsTooltip contentStyle={{ color: '#000000' }} itemStyle={{ color: '#000000' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Paper>
+
         {/* Roadmap Section */}
         <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
           <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}>

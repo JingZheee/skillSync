@@ -66,7 +66,7 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
               />
-              <Link href="../../homepage" passHref>
+              <Link href="../../company/dashboard" passHref>
                 <Button type="submit" variant="contained" color="primary" fullWidth>
                   Sign in  
                 </Button>
