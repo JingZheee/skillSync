@@ -270,6 +270,13 @@ export default function LecturerDashboard() {
     '#FFC23D',
    
   ];
+
+  // Add new state for success rates data
+  const [successRatesData] = useState([
+    { name: 'Challenge Acceptance Rate', rate: 85 },
+    { name: 'Job Employment Rate', rate: 78 },
+  ]);
+
 useEffect(() => {
     setMounted(true);
   }, []);
@@ -368,27 +375,27 @@ useEffect(() => {
 
       <Grid container spacing={3}>
         {/* Trending Skills Section */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-              <Box>
-                <Box display="flex" alignItems="center">
-                  <TrendingUpIcon sx={{ mr: 1 }} />
-                  <Typography variant="h6">Trending Skills</Typography>
+        <Grid item xs={12} md={4}>
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                <Box>
+                  <Box display="flex" alignItems="center">
+                    <TrendingUpIcon sx={{ mr: 1 }} />
+                    <Typography variant="h6">Trending Skills</Typography>
+                  </Box>
+                  <Typography 
+                    variant="subtitle2" 
+                    color="text.secondary" 
+                    sx={{ 
+                      mt: 0.5,
+                      mb: 2,
+                      fontStyle: 'italic'
+                    }}
+                  >
+                    Trending skills for each study field
+                  </Typography>
                 </Box>
-                <Typography 
-                  variant="subtitle2" 
-                  color="text.secondary" 
-                  sx={{ 
-                    mt: 0.5,
-                    mb: 2,
-                    fontStyle: 'italic'
-                  }}
-                >
-                  Trending skills for each study field
-                </Typography>
-              </Box>
                 <FormControl size="small" sx={{ minWidth: 200 }}>
                   <Select
                     value={selectedFieldForSkills}
@@ -431,10 +438,10 @@ useEffect(() => {
           </Card>
         </Grid>
 
-        {/* SubCategories Distribution Section (Pie Chart) */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
+        {/* SubCategories Distribution Section */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                 <Box>
                   <Box display="flex" alignItems="center">
@@ -491,7 +498,55 @@ useEffect(() => {
           </Card>
         </Grid>
 
-        {/* Monthly Growth Trend (Line Chart) */}
+        {/* Success Rates Section */}
+        <Grid item xs={12} md={4}>
+          <Card sx={{ height: '100%', minHeight: 450 }}>
+            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box display="flex" alignItems="center" mb={2}>
+                <TrendingUpIcon sx={{ mr: 1 }} />
+                <Typography variant="h6">Overall Success Rates</Typography>
+              </Box>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                Overall challenge acceptance and employment rates
+              </Typography>
+              <Box sx={{ flexGrow: 1, minHeight: 350 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
+                    data={successRatesData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis 
+                      dataKey="name"
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      domain={[0, 100]}
+                      tickFormatter={(value) => `${value}%`}
+                    />
+                    <RechartsTooltip formatter={(value) => [`${value}%`, 'Rate']} />
+                    <Bar 
+                      dataKey="rate" 
+                      fill="#ff9800"
+                      radius={[4, 4, 0, 0]}
+                      label={{
+                        position: 'top',
+                        fill: '#666666',
+                        formatter: (value) => `${value}%`
+                      }}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Monthly Growth Trend */}
         <Grid item xs={12}>
           <Card>
             <CardContent>

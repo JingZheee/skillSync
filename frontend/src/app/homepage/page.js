@@ -49,6 +49,7 @@ import {
   Legend,
 } from 'recharts';
 import { useRouter } from 'next/navigation';
+import WorkIcon from '@mui/icons-material/Work';
 
 // New array-based data structure
 const mockCourses = [
@@ -173,6 +174,24 @@ export default function Homepage() {
     ],
   });
 
+  // Data for challenges acceptance rate
+  const [challengeAcceptanceData] = useState([
+    { name: 'Web Development', rate: 85 },
+    { name: 'Mobile Development', rate: 75 },
+    { name: 'Cloud Computing', rate: 70 },
+    { name: 'Data Science', rate: 80 },
+    { name: 'Cybersecurity', rate: 65 },
+  ]);
+
+  // Data for job employment ability rate
+  const [employmentRateData] = useState([
+    { name: 'Web Development', rate: 90 },
+    { name: 'Mobile Development', rate: 85 },
+    { name: 'Cloud Computing', rate: 88 },
+    { name: 'Data Science', rate: 92 },
+    { name: 'Cybersecurity', rate: 95 },
+  ]);
+
   const categoryConfig = {
     Technology: {
       subCategories: ['Web Development', 'Mobile Development', 'Cloud Computing', 'Data Science', 'Cybersecurity'],
@@ -203,6 +222,7 @@ export default function Homepage() {
     '#FD6E00',
     '#FBAC01',
     '#FFC23D',
+    '#F6DB2E',
   ];
 
   // Helper function to get skills data for pie chart with different percentages
@@ -708,6 +728,101 @@ export default function Homepage() {
             </Grid>
           </Grid>
         </Paper>
+
+        {/* New Charts Section */}
+        <Grid container spacing={3} sx={{ mt: 3 }}>
+          {/* Challenges Acceptance Rate */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <TrendingUpIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6">Challenges Acceptance Rate</Typography>
+                </Box>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  sx={{ mb: 2, fontStyle: 'italic' }}
+                >
+                  Percentage of successfully completed challenges by category
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={challengeAcceptanceData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis
+                      dataKey="name"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval={0}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tickFormatter={(value) => `${value}%`}
+                    />
+                    <RechartsTooltip
+                      formatter={(value) => [`${value}%`, 'Acceptance Rate']}
+                    />
+                    <Bar
+                      dataKey="rate"
+                      fill="#ff9800"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Job Employment Ability Rate */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <WorkIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6">Job Employment Ability Rate</Typography>
+                </Box>
+                <Typography 
+                  variant="subtitle2" 
+                  color="text.secondary" 
+                  sx={{ mb: 2, fontStyle: 'italic' }}
+                >
+                  Employment success rate by specialization
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={employmentRateData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <XAxis
+                      dataKey="name"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval={0}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tickFormatter={(value) => `${value}%`}
+                    />
+                    <RechartsTooltip
+                      formatter={(value) => [`${value}%`, 'Employment Rate']}
+                    />
+                    <Bar
+                      dataKey="rate"
+                      fill="#ff9800"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </Box>
     </Container>
   );
