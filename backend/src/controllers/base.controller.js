@@ -1,22 +1,23 @@
 const express = require("express");
-const responseType = require("../types/responseType");
-
+const ResponseType = require("../types/responseType");
 class BaseController {
   constructor(service) {
     this.service = service;
-    this.responseType = responseType;
+    this.responseType = ResponseType;
     this.router = express.Router();
     this.path = this.getPath();
+
     this.initializeRoutes();
   }
-
+  getService() {
+    return this.service;
+  }
   getPath() {
     // Override in child classes
     return "";
   }
 
   initializeRoutes() {
-
     this.getAll = this.getAll.bind(this);
     this.getById = this.getById.bind(this);
     this.create = this.create.bind(this);
