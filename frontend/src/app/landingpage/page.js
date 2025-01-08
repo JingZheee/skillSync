@@ -13,8 +13,16 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SchoolIcon from '@mui/icons-material/School';
 import BusinessIcon from '@mui/icons-material/Business';
 import StarIcon from '@mui/icons-material/Star';
+import Link from 'next/link';
+import { useRef } from 'react';
 
 export default function LandingPage() {
+  const registerSectionRef = useRef(null);
+
+  const scrollToRegister = () => {
+    registerSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const features = [
     {
       title: "Challenge-Based Learning",
@@ -77,7 +85,12 @@ export default function LandingPage() {
         <Typography variant="h6" color="textSecondary" sx={{ mb: 4, maxWidth: '800px' }}>
           Connect with industry challenges, advance your skills, and land your dream job through verified learning experiences.
         </Typography>
-        <Button variant="contained" size="large" sx={{ mt: 2 }}>
+        <Button 
+          variant="contained" 
+          size="large" 
+          sx={{ mt: 2 }}
+          onClick={scrollToRegister}
+        >
           Get Started
         </Button>
       </Box>
@@ -133,7 +146,10 @@ export default function LandingPage() {
       </Box>
 
       {/* Call to Action */}
-      <Box sx={{ py: 8, textAlign: 'center' }}>
+      <Box 
+        ref={registerSectionRef}
+        sx={{ py: 8, textAlign: 'center' }}
+      >
         <Typography variant="h3" gutterBottom fontWeight="bold">
           Ready to Begin Your Journey?
         </Typography>
@@ -148,39 +164,43 @@ export default function LandingPage() {
           justifyContent="center"
           alignItems="center"
         >
-          <Button 
-            variant="contained" 
-            size="large"
-            startIcon={<SchoolIcon />}
-            sx={{
-              backgroundColor: '#FBAC01',
-              '&:hover': {
+          <Link href="auth/register" passHref>
+            <Button 
+              variant="contained" 
+              size="large"
+              startIcon={<SchoolIcon />}
+              sx={{
                 backgroundColor: '#FBAC01',
-              },
-              minWidth: 200,
-              py: 1.5
-            }}
-          >
-            Register as Student
-          </Button>
-          <Button 
-            variant="outlined" 
-            size="large"
-            startIcon={<BusinessIcon />}
-            sx={{
-              borderColor: '#FF7409',
-              color: '#FF7409',
-              '&:hover': {
-                borderColor: '#FF4F09',
-                color: '#FF4F09',
-                backgroundColor: 'rgba(255, 116, 9, 0.04)'
-              },
-              minWidth: 200,
-              py: 1.5
-            }}
-          >
-            Register as Employer
-          </Button>
+                '&:hover': {
+                  backgroundColor: '#FBAC01',
+                },
+                minWidth: 200,
+                py: 1.5
+              }}
+            >
+              Register as Student
+            </Button>
+          </Link>
+          <Link href="auth/registerEmp" passHref>
+            <Button 
+              variant="outlined" 
+              size="large"
+              startIcon={<BusinessIcon />}
+              sx={{
+                borderColor: '#FF7409',
+                color: '#FF7409',
+                '&:hover': {
+                  borderColor: '#FF4F09',
+                  color: '#FF4F09',
+                  backgroundColor: 'rgba(255, 116, 9, 0.04)'
+                },
+                minWidth: 200,
+                py: 1.5
+              }}
+            >
+              Register as Employer
+            </Button>
+          </Link>
         </Stack>
       </Box>
     </Container>
