@@ -20,6 +20,12 @@ export const API = {
     delete: "/students/:id",
     findByField: "/students/field/:fieldId",
     findByRanking: "/students/ranking/:rankId",
+    enrollCourse: "/students/:id/courses/:courseId/enroll",
+    unenrollCourse: "/students/:id/courses/:courseId/unenroll",
+    registerHackathon: "/students/:id/hackathons/:hackathonId/register",
+    unregisterHackathon: "/students/:id/hackathons/:hackathonId/unregister",
+    registerChallenge: "/students/:id/challenges/:challengeId/register",
+    unregisterChallenge: "/students/:id/challenges/:challengeId/unregister",
   },
   rankings: {
     findAll: "/rankings",
@@ -34,6 +40,7 @@ export const API = {
     create: "/fields",
     update: "/fields/:id",
     delete: "/fields/:id",
+    findAllSub: "/fields/:id/subfields",
   },
   hackathons: {
     findAll: "/hackathons",
@@ -57,6 +64,8 @@ export const API = {
     findSubmissions: "/challenges/:id/submissions",
     submit: "/challenges/:id/submit",
     updateSubmission: "/challenges/submission/:submissionId/status",
+    getAllSubmissions: "/challenges/submissions/all",
+    getSubmissionById: "/challenges/submissions/:submissionId",
   },
   courses: {
     findAll: "/courses",
@@ -78,5 +87,9 @@ export const API = {
     findHackathons: "/companies/:id/hackathons",
     findChallenges: "/companies/:id/challenges",
     findCourses: "/companies/:id/courses",
+  },
+  submissions: {
+    findAll: "/submissions",
+    findById: "/submissions/:id",
   },
 };

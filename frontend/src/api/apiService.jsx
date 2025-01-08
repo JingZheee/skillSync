@@ -1,5 +1,5 @@
 import axios, { AxiosPromise } from "axios";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 const API_ENDPOINT = process.env.API_ENDPOINT || "http://localhost:5005";
 
@@ -13,8 +13,7 @@ const client = axios.create({
 });
 
 class APIService {
-  static get(path = "", params = {}) {
-
+  static get(path = "", params = { limit: 999 }) {
     return client({
       method: "GET",
       url: path,
@@ -84,10 +83,7 @@ client.interceptors.response.use(
           break;
 
         case 502:
-          toast.error(
-            "Server Down",
-            "Our servers are currently unavailable"
-          );
+          toast.error("Server Down", "Our servers are currently unavailable");
           return Promise.reject({
             data: {
               message: "Server Down!",

@@ -1,5 +1,5 @@
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,48 +15,53 @@ import {
   ListItemText,
   Typography,
   CircularProgress,
-} from '@mui/material';
-import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-import FileUpload from '@/components/FileUpload';
-import { useRouter } from 'next/navigation';
+} from "@mui/material";
+import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
+import FileUpload from "@/components/FileUpload";
+import { useRouter } from "next/navigation";
+import APIService from "@/api/apiService";
+import { API } from "@/api/endpoints";
 
-export default function SubmitChallengeModal({ 
-  open, 
-  onClose, 
+export default function SubmitChallengeModal({
+  open,
+  onClose,
   challengeId,
-  submissionGuidelines 
+  studentId,
+  submissionGuidelines,
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionFiles, setSubmissionFiles] = useState([]);
-  const [submissionNotes, setSubmissionNotes] = useState('');
+  const [submissionNotes, setSubmissionNotes] = useState("");
 
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      
-      const formData = new FormData();
-      submissionFiles.forEach(file => {
-        formData.append('files', file);
-      });
-      formData.append('notes', submissionNotes);
-      formData.append('challengeId', challengeId);
-      formData.append('submittedAt', new Date().toISOString());
 
-      const response = await fetch(`/api/challenges/${challengeId}/submit`, {
-        method: 'POST',
-        body: formData,
+      const formData = new FormData();
+      submissionFiles.forEach((file) => {
+        formData.append("files", file);
       });
+      formData.append("notes", submissionNotes);
+      formData.append("challengeId", challengeId);
+
+      const response = await APIService.post(
+        API.challenges.submit.replace(":id", challengeId),
+        {
+          studentId,
+          notes: submissionNotes,
+          files: submissionFiles,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Submission failed');
+        throw new Error("Submission failed");
       }
 
       onClose();
       router.push(`/challenges/${challengeId}/submitted`);
-      
     } catch (error) {
-      console.error('Error submitting challenge:', error);
+      console.error("Error submitting challenge:", error);
       // Handle error
     } finally {
       setIsSubmitting(false);
@@ -64,16 +69,14 @@ export default function SubmitChallengeModal({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={() => !isSubmitting && onClose()}
       maxWidth="md"
       fullWidth
     >
-      <DialogTitle>
-        Submit Challenge Solution
-      </DialogTitle>
-      
+      <DialogTitle>Submit Challenge Solution</DialogTitle>
+
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
           <Alert severity="info">
@@ -81,7 +84,7 @@ export default function SubmitChallengeModal({
               Submission Requirements:
             </Typography>
             <List dense>
-              {submissionGuidelines.map((guideline, index) => (
+              {submissionGuidelines?.map((guideline, index) => (
                 <ListItem key={index}>
                   <ListItemIcon>
                     <CheckCircleIcon fontSize="small" color="primary" />
@@ -115,21 +118,20 @@ export default function SubmitChallengeModal({
       </DialogContent>
 
       <DialogActions sx={{ p: 3 }}>
-        <Button 
-          onClick={onClose} 
-          disabled={isSubmitting}
-        >
+        <Button onClick={onClose} disabled={isSubmitting}>
           Cancel
         </Button>
         <Button
           variant="contained"
           onClick={handleSubmit}
           disabled={isSubmitting || submissionFiles.length === 0}
-          startIcon={isSubmitting && <CircularProgress size={20} color="inherit" />}
+          startIcon={
+            isSubmitting && <CircularProgress size={20} color="inherit" />
+          }
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Solution'}
+          {isSubmitting ? "Submitting..." : "Submit Solution"}
         </Button>
       </DialogActions>
     </Dialog>
   );
-} 
+}

@@ -11,6 +11,16 @@ const studentSchema = new mongoose.Schema(
       sub: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubField" }],
     },
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
+    ranking: { type: mongoose.Schema.Types.ObjectId, ref: "Ranking" },
+    studentCourses: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "StudentCourse" },
+    ],
+    studentChallenges: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "StudentChallenge" },
+    ],
+    studentHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "StudentHackathon" },
+    ],
     deleted_at: Date,
   },
   {

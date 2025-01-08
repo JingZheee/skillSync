@@ -19,6 +19,9 @@ const hackathonSchema = new mongoose.Schema(
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
     createdDate: { type: Date, default: Date.now },
     uploadedFile: { type: String },
+    studentHackathons: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "StudentHackathon" },
+    ],
     deleted_at: Date,
   },
   {

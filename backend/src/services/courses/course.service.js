@@ -1,5 +1,5 @@
 const BaseService = require("../base.service");
-const StudentCourse = require("../../models/studentCourse");
+const Student = require("../../models/student");
 
 class CourseService extends BaseService {
   constructor(model) {
@@ -11,44 +11,34 @@ class CourseService extends BaseService {
   }
 
   async findEnrolledStudents(courseId) {
-    const enrollments = await StudentCourse.find({
-      course: courseId,
+    const students = await Student.find({
+      studentCourses: courseId,
       deleted_at: null,
-    }).populate("student");
+    }).select("-password");
 
-    return enrollments.map((enrollment) => enrollment.student);
+    return students;
   }
 
   async enrollStudent(courseId, studentId) {
-    try {
-      const enrollment = await StudentCourse.create({
-        student: studentId,
-        course: courseId,
-      });
-      return enrollment;
-    } catch (error) {
-      throw new Error(`Failed to enroll student: ${error.message}`);
-    }
+    return await Student.findByIdAndUpdate(
+      studentId,
+      {
+        $addToSet: { studentCourses: courseId },
+        $set: { updated_at: new Date() },
+      },
+      { new: true }
+    ).populate("studentCourses");
   }
 
   async unenrollStudent(courseId, studentId) {
-    try {
-      const enrollment = await StudentCourse.findOne({
-        student: studentId,
-        course: courseId,
-        deleted_at: null,
-      });
-
-      if (!enrollment) {
-        throw new Error("Enrollment not found");
-      }
-
-      enrollment.deleted_at = new Date();
-      await enrollment.save();
-      return enrollment;
-    } catch (error) {
-      throw new Error(`Failed to unenroll student: ${error.message}`);
-    }
+    return await Student.findByIdAndUpdate(
+      studentId,
+      {
+        $pull: { studentCourses: courseId },
+        $set: { updated_at: new Date() },
+      },
+      { new: true }
+    ).populate("studentCourses");
   }
 
   async findAll(filter = {}, options = {}) {
@@ -60,18 +50,6 @@ class CourseService extends BaseService {
 
   async findById(id) {
     return await super.findById(id, ["company", "tags"]);
-  }
-
-  async getEnrolledStudents(courseId) {
-    try {
-      const enrollments = await StudentCourse.find({
-        course: courseId,
-        deleted_at: null,
-      }).populate("student");
-      return enrollments.map((enrollment) => enrollment.student);
-    } catch (error) {
-      throw new Error(`Failed to get enrolled students: ${error.message}`);
-    }
   }
 }
 

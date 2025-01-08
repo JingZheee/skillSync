@@ -51,21 +51,28 @@ class ChallengeController extends BaseController {
 
   async create(req, res) {
     try {
+      console.log("Raw request body:", req.body);
+      console.log("Files received:", req.files);
+
       const challengeData = JSON.parse(req.body.data);
+      console.log("Parsed challenge data:", challengeData);
 
       if (!challengeData.field?.main) {
         throw new Error("Main field is required");
       }
 
-      const challengeFiles =
-        req.files?.map((file) => ({
-          filename: file.filename,
-          originalName: file.originalname,
-          path: file.path,
-          size: file.size,
-          mimetype: file.mimetype,
-        })) || [];
+      // Ensure challengeFiles is always an array
+      const challengeFiles = req.files
+        ? Array.from(req.files).map((file) => ({
+            filename: file.filename,
+            originalName: file.originalname,
+            path: file.path,
+            size: file.size,
+            mimetype: file.mimetype,
+          }))
+        : [];
 
+      // Create challenge with files
       const data = await this.service.create({
         ...challengeData,
         challengeFiles,
@@ -77,9 +84,13 @@ class ChallengeController extends BaseController {
           this.responseType.success(data, "Challenge created successfully")
         );
     } catch (error) {
+      console.error("Error in challenge creation:", error);
+      // Clean up uploaded files if there's an error
       if (req.files) {
         await Promise.all(
-          req.files.map((file) => fs.unlink(file.path).catch(() => {}))
+          Array.from(req.files).map((file) =>
+            fs.unlink(file.path).catch(() => {})
+          )
         );
       }
       res.status(400).json(this.responseType.error(error.message));
@@ -155,12 +166,11 @@ class ChallengeController extends BaseController {
   async updateSubmissionStatus(req, res) {
     try {
       const { submissionId } = req.params;
-      const { status, feedback } = req.body;
+      const { feedback } = req.body;
       const reviewerId = req.user?.id;
 
       const data = await this.service.updateSubmissionStatus(
         submissionId,
-        status,
         reviewerId,
         feedback
       );

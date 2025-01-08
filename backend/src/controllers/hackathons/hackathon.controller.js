@@ -58,9 +58,11 @@ class HackathonController extends BaseController {
     try {
       const { id, studentId } = req.params;
       const data = await this.service.registerStudent(id, studentId);
-      res.json(this.responseType.success(data));
+      res.json(
+        this.responseType.success(data, "Student registered successfully")
+      );
     } catch (error) {
-      res.status(500).json(this.responseType.error(error.message));
+      res.status(400).json(this.responseType.error(error.message));
     }
   }
 
@@ -68,9 +70,11 @@ class HackathonController extends BaseController {
     try {
       const { id, studentId } = req.params;
       const data = await this.service.unregisterStudent(id, studentId);
-      res.json(this.responseType.success(data));
+      res.json(
+        this.responseType.success(data, "Student unregistered successfully")
+      );
     } catch (error) {
-      res.status(500).json(this.responseType.error(error.message));
+      res.status(400).json(this.responseType.error(error.message));
     }
   }
 

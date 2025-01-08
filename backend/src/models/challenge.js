@@ -41,7 +41,9 @@ const challengeSchema = new mongoose.Schema(
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
     hackathon: { type: mongoose.Schema.Types.ObjectId, ref: "Hackathon" },
-    completedBy: { type: Number, default: 0 },
+    studentChallenges: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "StudentChallenge" },
+    ],
     deleted_at: Date,
   },
   {
