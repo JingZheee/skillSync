@@ -64,6 +64,10 @@ export default function LandingPage() {
     }
   ];
 
+  const handleRegister = (type) => {
+    router.push(`/auth/register?type=${type}`);
+  };
+
   return (
     <Container maxWidth="lg">
       {/* Hero Section */}
