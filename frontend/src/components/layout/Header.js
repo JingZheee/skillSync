@@ -15,12 +15,20 @@ import {
   Stack,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// Updated Navigation items
+// Updated Navigation items with dropdown
 const pages = [
-  { title: 'Courses', path: '/courses' },
+  { 
+    title: 'Resources',
+    items: [
+      { title: 'Courses', path: '/course' },
+      { title: 'Roadmap', path: '/roadmap' },
+      { title: 'Articles', path: '/articles' }
+    ]
+  },
   { title: 'Mini Challenges', path: '/challenges' },
   { title: 'Hackathon', path: '/hackathon' },
 ];
@@ -37,10 +45,12 @@ export default function Header() {
   const router = useRouter();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const [resourcesAnchor, setResourcesAnchor] = useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
+
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -53,6 +63,14 @@ export default function Header() {
     setAnchorElUser(null);
   };
 
+  const handleResourcesClick = (event) => {
+    setResourcesAnchor(event.currentTarget);
+  };
+
+  const handleResourcesClose = () => {
+    setResourcesAnchor(null);
+  };
+
   return (
     <AppBar position="sticky" sx={{ backgroundColor: 'background.paper' }}>
       <Container maxWidth="xl">
@@ -62,7 +80,7 @@ export default function Header() {
             variant="h6"
             noWrap
             component={Link}
-            href="/"
+            href="/homepage"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -104,17 +122,33 @@ export default function Header() {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map((page) => (
-                <MenuItem 
-                  key={page.title} 
-                  onClick={() => {
-                    handleCloseNavMenu();
-                    router.push(page.path);
-                  }}
-                >
-                  <Typography textAlign="center">{page.title}</Typography>
-                </MenuItem>
-              ))}
+              {pages.map((page) => 
+                page.items ? (
+                  // Render dropdown items in mobile menu
+                  page.items.map((item) => (
+                    <MenuItem 
+                      key={item.title} 
+                      onClick={() => {
+                        handleCloseNavMenu();
+                        router.push(item.path);
+                      }}
+                    >
+                      <Typography textAlign="center">{item.title}</Typography>
+                    </MenuItem>
+                  ))
+                ) : (
+                  // Render regular menu items
+                  <MenuItem 
+                    key={page.title} 
+                    onClick={() => {
+                      handleCloseNavMenu();
+                      router.push(page.path);
+                    }}
+                  >
+                    <Typography textAlign="center">{page.title}</Typography>
+                  </MenuItem>
+                )
+              )}
             </Menu>
           </Box>
 
@@ -138,15 +172,59 @@ export default function Header() {
 
           {/* Desktop Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button
-                key={page.title}
-                onClick={() => router.push(page.path)}
-                sx={{ my: 2, color: 'text.primary', display: 'block' }}
-              >
-                {page.title}
-              </Button>
-            ))}
+            {pages.map((page) => 
+              page.items ? (
+                // Render dropdown for Resources
+                <Box key={page.title}>
+                  <Button
+                    onClick={handleResourcesClick}
+                    sx={{ 
+                      my: 2, 
+                      color: 'text.primary', 
+                      display: 'flex', 
+                      alignItems: 'center'
+                    }}
+                    endIcon={<KeyboardArrowDown />}
+                  >
+                    {page.title}
+                  </Button>
+                  <Menu
+                    anchorEl={resourcesAnchor}
+                    open={Boolean(resourcesAnchor)}
+                    onClose={handleResourcesClose}
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
+                    }}
+                  >
+                    {page.items.map((item) => (
+                      <MenuItem 
+                        key={item.title} 
+                        onClick={() => {
+                          handleResourcesClose();
+                          router.push(item.path);
+                        }}
+                      >
+                        {item.title}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </Box>
+              ) : (
+                // Render regular menu items
+                <Button
+                  key={page.title}
+                  onClick={() => router.push(page.path)}
+                  sx={{ my: 2, color: 'text.primary', display: 'block' }}
+                >
+                  {page.title}
+                </Button>
+              )
+            )}
           </Box>
 
           {/* Right Side - Search & User Menu */}
