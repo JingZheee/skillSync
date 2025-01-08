@@ -9,25 +9,20 @@ import {
   Chip,
   Box,
   Button,
+  CardActions,
 } from '@mui/material';
 import{ useRouter } from 'next/navigation';
 
-export default function HackathonCard({ hackathon, isOngoing = true }) {
+export default function HackathonCard({ hackathon, isOngoing }) {
   const router = useRouter();
 
-  const handleClick = () => {
+  const handleCardClick = () => {
     router.push(`/hackathon/${hackathon.id}`);
   };
 
-  const handleJoinClick = (e) => {
-    e.stopPropagation(); // Prevent card click when clicking the button
-    // Handle join logic here
-    console.log('Joining hackathon:', hackathon.id);
-  };
-
   return (
-    <Card sx={{ height: '100%' }}>
-      <CardActionArea onClick={handleClick}>
+    <Box onClick={handleCardClick} sx={{ cursor: 'pointer' }}>
+      <Card sx={{ height: '100%' }}>
         <CardMedia
           component="img"
           height="200"
@@ -70,25 +65,16 @@ export default function HackathonCard({ hackathon, isOngoing = true }) {
 
           {/* Deadline or Winners */}
           {isOngoing ? (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                Deadline: {hackathon.deadline}
-              </Typography>
-              <Button 
-                variant="contained" 
-                color="primary"
-                onClick={handleJoinClick}
-              >
-                Join Now
-              </Button>
-            </Box>
+            <Typography variant="body2" color="text.secondary">
+              Deadline: {hackathon.deadline}
+            </Typography>
           ) : (
             <Typography variant="body2" color="text.secondary">
               Winners: {hackathon.winners.join(', ')}
             </Typography>
           )}
         </CardContent>
-      </CardActionArea>
-    </Card>
+      </Card>
+    </Box>
   );
 }
