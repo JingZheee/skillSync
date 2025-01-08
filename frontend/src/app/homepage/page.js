@@ -138,39 +138,38 @@ export default function Homepage() {
   const [selectedFieldForSkills, setSelectedFieldForSkills] = useState('Technology');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Web Development');
 
-  // Data for bar chart (trending skills) - Copied from university dashboard
+  // Data for bar chart (trending skills) using subcategories
   const [trendingSkillsData] = useState({
     Technology: [
-      { name: 'JavaScript', growth: 75 },
-      { name: 'Python', growth: 70 },
-      { name: 'React', growth: 65 },
-      { name: 'Node.js', growth: 60 },
-      { name: 'AWS', growth: 55 },
-      { name: 'Machine Learning', growth: 50 },
+      { name: 'Web Development', growth: 75 },
+      { name: 'Mobile Development', growth: 70 },
+      { name: 'Cloud Computing', growth: 65 },
+      { name: 'Data Science', growth: 60 },
+      { name: 'Cybersecurity', growth: 55 },
     ],
     Business: [
-      { name: 'Business Analysis', growth: 70 },
-      { name: 'Project Management', growth: 65 },
-      { name: 'Strategic Planning', growth: 60 },
-      { name: 'Leadership', growth: 55 },
+      { name: 'Strategy', growth: 70 },
+      { name: 'Operations', growth: 65 },
+      { name: 'Management', growth: 60 },
+      { name: 'Entrepreneurship', growth: 55 },
     ],
     Finance: [
-      { name: 'Financial Analysis', growth: 70 },
-      { name: 'Risk Assessment', growth: 65 },
-      { name: 'Blockchain', growth: 60 },
-      { name: 'Trading Strategies', growth: 55 },
+      { name: 'Investment', growth: 70 },
+      { name: 'FinTech', growth: 65 },
+      { name: 'Risk Management', growth: 60 },
+      { name: 'Trading', growth: 55 },
     ],
     Design: [
-      { name: 'UI Design', growth: 70 },
-      { name: 'User Research', growth: 65 },
-      { name: 'Wireframing', growth: 60 },
-      { name: 'Prototyping', growth: 55 },
+      { name: 'UI/UX', growth: 70 },
+      { name: 'Graphic Design', growth: 65 },
+      { name: 'Product Design', growth: 60 },
+      { name: 'Brand Design', growth: 55 },
     ],
     Marketing: [
-      { name: 'Social Media Marketing', growth: 70 },
-      { name: 'Content Strategy', growth: 65 },
-      { name: 'Analytics', growth: 60 },
-      { name: 'SEO Optimization', growth: 55 },
+      { name: 'Digital Marketing', growth: 70 },
+      { name: 'Content Marketing', growth: 65 },
+      { name: 'Social Media', growth: 60 },
+      { name: 'SEO', growth: 55 },
     ],
   });
 
@@ -206,23 +205,71 @@ export default function Homepage() {
     '#FFC23D',
   ];
 
-  // Helper function to get skills data for pie chart with specific percentages
-  const getSkillsData = (field) => {
-    const skills = categoryConfig[field].skills;
-    
-    // Define specific percentages for each field
-    const percentages = {
-      Technology: [30, 25, 15, 10, 10, 10], // Total 100%
-      Business: [35, 25, 25, 15], // Total 100%
-      Finance: [40, 25, 20, 15], // Total 100%
-      Design: [35, 30, 20, 15], // Total 100%
-      Marketing: [40, 25, 20, 15] // Total 100%
+  // Helper function to get skills data for pie chart with different percentages
+  const getSkillsData = (field, subCategory) => {
+    const subCategorySkillsData = {
+      'Web Development': [
+        { name: 'JavaScript', value: 20 },
+        { name: 'Python', value: 30 },
+        { name: 'React', value: 40 },
+        { name: 'Node.js', value: 10 },
+      ],
+      'Mobile Development': [
+        { name: 'React Native', value: 35 },
+        { name: 'Flutter', value: 25 },
+        { name: 'Swift', value: 20 },
+        { name: 'Kotlin', value: 20 },
+      ],
+      'Cloud Computing': [
+        { name: 'AWS', value: 40 },
+        { name: 'Azure', value: 30 },
+        { name: 'Docker', value: 20 },
+        { name: 'Kubernetes', value: 10 },
+      ],
+      'Data Science': [
+        { name: 'Python', value: 35 },
+        { name: 'R', value: 25 },
+        { name: 'SQL', value: 25 },
+        { name: 'Tableau', value: 15 },
+      ],
+      'Cybersecurity': [
+        { name: 'Network Security', value: 30 },
+        { name: 'Cryptography', value: 25 },
+        { name: 'Ethical Hacking', value: 25 },
+        { name: 'Security Tools', value: 20 },
+      ],
+      'Strategy': [
+        { name: 'Strategic Planning', value: 40 },
+        { name: 'Market Analysis', value: 30 },
+        { name: 'Risk Management', value: 30 },
+      ],
+      'Operations': [
+        { name: 'Process Optimization', value: 35 },
+        { name: 'Quality Management', value: 35 },
+        { name: 'Supply Chain', value: 30 },
+      ],
+      'Management': [
+        { name: 'Leadership', value: 40 },
+        { name: 'Team Management', value: 30 },
+        { name: 'Project Management', value: 30 },
+      ],
+      'Entrepreneurship': [
+        { name: 'Business Planning', value: 35 },
+        { name: 'Innovation', value: 35 },
+        { name: 'Marketing', value: 30 },
+      ]
     };
 
-    return skills.map((skill, index) => ({
-      name: skill,
-      value: percentages[field][index] || 0
-    }));
+    // Return specific data for the selected subcategory
+    return subCategorySkillsData[subCategory] || [];
+  };
+
+  // Update selectedSubCategory when field changes
+  const handleFieldChange = (event) => {
+    const newField = event.target.value;
+    setSelectedFieldForSkills(newField);
+    // Automatically set to first subcategory of new field
+    setSelectedSubCategory(categoryConfig[newField].subCategories[0]);
   };
 
   return (
@@ -246,13 +293,13 @@ export default function Homepage() {
                         <Typography variant="h6">Trending Skills</Typography>
                       </Box>
                       <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 0.5, mb: 2, fontStyle: 'italic' }}>
-                        Trending skills for each study field
+                        Trending subcategories for each field
                       </Typography>
                     </Box>
                     <FormControl size="small" sx={{ minWidth: 200 }}>
                       <Select
                         value={selectedFieldForSkills}
-                        onChange={(e) => setSelectedFieldForSkills(e.target.value)}
+                        onChange={handleFieldChange}
                         sx={{ height: 40 }}
                       >
                         {Object.keys(categoryConfig).map((field) => (
@@ -264,9 +311,18 @@ export default function Homepage() {
                     </FormControl>
                   </Box>
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={trendingSkillsData[selectedFieldForSkills]} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <BarChart 
+                      data={trendingSkillsData[selectedFieldForSkills]} 
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} interval={0} />
+                      <XAxis 
+                        dataKey="name" 
+                        angle={-45} 
+                        textAnchor="end" 
+                        height={60} 
+                        interval={0}
+                      />
                       <YAxis />
                       <RechartsTooltip />
                       <Bar dataKey="growth" fill="#ff9800" />
@@ -307,7 +363,7 @@ export default function Homepage() {
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
-                        data={getSkillsData(selectedFieldForSkills)}
+                        data={getSkillsData(selectedFieldForSkills, selectedSubCategory)}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -315,7 +371,7 @@ export default function Homepage() {
                         outerRadius={100}
                         dataKey="value"
                       >
-                        {getSkillsData(selectedFieldForSkills).map((entry, index) => (
+                        {getSkillsData(selectedFieldForSkills, selectedSubCategory).map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={ORANGE_COLORS[index % ORANGE_COLORS.length]} />
                         ))}
                       </Pie>
