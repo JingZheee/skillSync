@@ -1,25 +1,83 @@
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const connectDB = require("./config/database");
+const controllers = require("./controllers");
+const responseType = require("./types/responseType");
 
-const app = express();
+console.log("�� Application starting...");
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+async function createApp(options = {}) {
+  console.log("📦 Creating application...");
+  const app = express();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+  // Middleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.get('/', (req, res) => {
-  res.send('API is running');
-});
+  // Connect to Database
+  try {
+    await connectDB();
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+    // Direct check of mongoose connection state
+    const connectionState = mongoose.connection.readyState;
+    const stateMap = {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    };
+
+    console.log("MongoDB Connection Status:", {
+      state: stateMap[connectionState],
+      isConnected: connectionState === 1,
+    });
+
+    // Add connection event listeners
+    mongoose.connection.on("connected", () => {
+      console.log("✅ MongoDB connected successfully");
+    });
+
+    mongoose.connection.on("error", (err) => {
+      console.error("❌ MongoDB connection error:", err);
+    });
+
+    mongoose.connection.on("disconnected", () => {
+      console.log("❌ MongoDB disconnected");
+    });
+  } catch (error) {
+    console.error("Failed to connect to database:", error);
+    throw error;
+  }
+
+  controllers.forEach(({ Controller, Service, Model, subControllers }) => {
+    const service = new Service(Model);
+    const controller = new Controller(service);
+    if (subControllers) {
+      controller.setSubControllers(subControllers);
+    }
+    app.use(`/api/${controller.getPath()}`, controller.getRouter());
+  });
+
+  return app;
+}
+
+// Immediately start the server
+async function startServer() {
+  try {
+    const app = await createApp();
+    const PORT = process.env.PORT || 3000;
+
+    app.listen(PORT, () => {
+      console.log(`🌍 Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+// Run the server
+startServer();
+
+// Still export createApp for testing purposes
+module.exports = createApp;
