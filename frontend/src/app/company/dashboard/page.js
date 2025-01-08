@@ -113,7 +113,7 @@ export default function CompanyDashboard() {
           Quick Actions
         </Typography>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Button 
               variant="contained" 
               fullWidth
@@ -122,31 +122,22 @@ export default function CompanyDashboard() {
               Post New Challenge
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Button 
-              variant="outlined" 
+              variant="contained" 
               fullWidth
               sx={{ height: '48px' }}
             >
               Create Course
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <Button 
-              variant="outlined" 
+              variant="contained" 
               fullWidth
               sx={{ height: '48px' }}
             >
               Schedule Hackathon
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Button 
-              variant="outlined" 
-              fullWidth
-              sx={{ height: '48px' }}
-            >
-              View Applications
             </Button>
           </Grid>
         </Grid>
