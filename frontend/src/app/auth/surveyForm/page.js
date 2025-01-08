@@ -13,61 +13,75 @@ import {
   InputLabel,
 } from '@mui/material';
 import { Autocomplete, TextField } from '@mui/material';
+import Link from 'next/link';
 
 export default function SurveyForm() {
   const [selectedField, setSelectedField] = useState('');
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
 
   const fieldData = [
-    'Accounting',
-    'Computing',
-    'Engineering',
+    'Technology',
     'Business',
+    'Finance',
+    'Design',
+    'Marketing',
   ];
 
+  const subcategoryData = {
+    Technology: [
+      'Web Development',
+      'Mobile Development',
+      'Cloud Computing',
+      'Data Science',
+      'Cybersecurity',
+    ],
+    Business: ['Strategy', 'Operations', 'Management', 'Entrepreneurship'],
+    Finance: ['Investment', 'FinTech', 'Risk Management', 'Trading'],
+    Design: ['UI/UX', 'Graphic Design', 'Product Design', 'Brand Design'],
+    Marketing: [
+      'Digital Marketing',
+      'Content Marketing',
+      'Social Media',
+      'SEO',
+    ],
+  };
+
   const skillsData = [
-    'Financial Reporting',
-    'Budget Management',
-    'Auditing',
-    'Taxation',
-    'Financial Analysis',
-    'Data Visualization',
-    'Regulatory Compliance',
-    'Financial Forecasting',
-    'Python', 'Java', 'C++', 'JavaScript',
-    'HTML', 'CSS', 'React', 'Node.js',
-    'Data Structures and Algorithms',
-    'SQL', 'MongoDB',
-    'Cybersecurity',
-    'Machine Learning (ML)',
-    'Software Development',
-    'Version Control (Git)',
-    'Computer-Aided Design (CAD)',
-    'Structural Analysis',
-    'Circuit Design',
-    'Mechanical Design',
+    'JavaScript',
+    'Python',
+    'React',
+    'Node.js',
+    'AWS',
+    'Machine Learning',
+    'Business Analysis',
     'Project Management',
-    'Robotics',
-    'MATLAB/Simulink',
-    'Quality Assurance',
     'Strategic Planning',
-    'Market Research',
-    'Data Analysis',
-    'Business Communication',
     'Leadership',
-    'Financial Modeling',
-    'Entrepreneurship',
-    'Customer Relationship Management (CRM)',
+    'Financial Analysis',
+    'Risk Assessment',
+    'Blockchain',
+    'Trading Strategies',
+    'UI Design',
+    'User Research',
+    'Wireframing',
+    'Prototyping',
+    'Social Media Marketing',
+    'Content Strategy',
+    'Analytics',
+    'SEO Optimization',
   ];
 
   const handleFieldChange = (event) => {
     setSelectedField(event.target.value);
+    setSelectedSubcategories([]); // Reset subcategories when field changes
     setSelectedSkills([]); // Reset skills when field changes
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Selected field:', selectedField);
+    console.log('Selected subcategories:', selectedSubcategories);
     console.log('Selected skills:', selectedSkills);
     // Add your API call here
   };
@@ -94,14 +108,15 @@ export default function SurveyForm() {
             textAlign="center"
             sx={{ mb: 4 }}
           >
-            Choose your field and relevant skills
+            Choose your category, subcategory, and relevant skills
           </Typography>
 
           <form onSubmit={handleSubmit}>
             <Stack spacing={4}>
               {/* Field Selection */}
               <FormControl fullWidth>
-                <InputLabel id="field-select-label">Field of Study</InputLabel>
+              
+                <InputLabel id="field-select-label">Category</InputLabel>
                 <Select
                   labelId="field-select-label"
                   id="field-select"
@@ -118,11 +133,55 @@ export default function SurveyForm() {
                 </Select>
               </FormControl>
 
+              {/* Subcategories Selection */}
+              {selectedField && subcategoryData[selectedField] && (
+                <Box>
+                  
+                  <Paper elevation={2} sx={{ p: 3, bgcolor: 'background.paper' }}>
+                    <FormControl fullWidth>
+                      <InputLabel color="primary">Choose a Subcategory</InputLabel>
+                      <Select
+                        value={selectedSubcategories}
+                        onChange={(event) => {
+                          setSelectedSubcategories(event.target.value);
+                        }}
+                        label="Choose a Subcategory"
+                        color="primary"
+                        sx={{
+                          '& .MuiSelect-select': {
+                            py: 1.5,
+                          },
+                        }}
+                      >
+                        {subcategoryData[selectedField].map((subCat) => (
+                          <MenuItem 
+                            key={subCat} 
+                            value={subCat}
+                            sx={{
+                              py: 1.5,
+                              '&.Mui-selected': {
+                                backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                              },
+                              '&.Mui-selected:hover': {
+                                backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                              },
+                              '&:hover': {
+                                backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                              },
+                            }}
+                          >
+                            {subCat}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Paper>
+                </Box>
+              )}
+
               {/* Skills Selection */}
               <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" gutterBottom>
-                  Select Your Skills
-                </Typography>
+                
                 <Paper elevation={2} sx={{ p: 3, bgcolor: 'background.paper' }}>
                   <Autocomplete
                     multiple
@@ -143,18 +202,20 @@ export default function SurveyForm() {
                   />
                 </Paper>
               </Box>
-
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                size="large"
-                sx={{ mt: 4 }}
-                fullWidth
-                disabled={!selectedField}
-              >
-                Complete Profile
-              </Button>
+              
+              <Link href="../homepage" passHref>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  sx={{ mt: 4 }}
+                  fullWidth
+                  disabled={!selectedField}
+                >
+                  Complete Profile
+                </Button>
+              </Link>
             </Stack>
           </form>
         </Paper>
