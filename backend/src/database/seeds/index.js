@@ -3,6 +3,7 @@ const connectDB = require("../../config/database");
 const seedFields = require("./fieldSeeder");
 const seedTags = require("./tagSeeder");
 const seedChallenges = require("./challengeSeeder");
+const seedCompanies = require("./companySeeder");
 async function seedDatabase() {
   try {
     // Connect to database
@@ -17,6 +18,7 @@ async function seedDatabase() {
     await seedFields();
     await seedTags();
     await seedChallenges();
+    await seedCompanies();
     console.log("✅ All seeds completed successfully");
 
     // Close connection if not in production
