@@ -407,7 +407,7 @@ return (
                 fullWidth
                 onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`/courses/${course.id}`);
+                    router.push(`/course/${course.id}`);
                 }}
                 sx={{
                     bgcolor: 'orange',
