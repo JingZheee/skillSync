@@ -31,7 +31,7 @@ const getHackathonDetails = (id) => ({
   title: "AI Innovation Challenge",
   company: "Tech Corp",
   description: "Build the next generation of AI applications that solve real-world problems. This hackathon focuses on creating innovative solutions using artificial intelligence and machine learning.",
-  image: "https://via.placeholder.com/1200x400",
+  image: "/images/hackathon_1.jpg",
   prizes: [
     { title: "First Place", value: "$10,000" },
     { title: "Second Place", value: "$5,000" },
