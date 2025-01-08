@@ -282,13 +282,22 @@ useEffect(() => {
     }
   }, [selectedFieldForSkills]);
 
-  // Helper function to get skills data for pie chart
+  // Helper function to get skills data for pie chart with different percentages
   const getSkillsData = (field) => {
     const skills = categoryConfig[field].skills;
-    const total = skills.length;
-    return skills.map(skill => ({
+    
+    // Define specific percentages for each field
+    const percentages = {
+      Technology: [30, 25, 15, 10, 10, 10], // Total 100%
+      Business: [35, 25, 25, 15], // Total 100%
+      Finance: [40, 25, 20, 15], // Total 100%
+      Design: [35, 30, 20, 15], // Total 100%
+      Marketing: [40, 25, 20, 15] // Total 100%
+    };
+
+    return skills.map((skill, index) => ({
       name: skill,
-      value: Math.floor(100 / total)
+      value: percentages[field][index] || 0
     }));
   };
 
@@ -453,10 +462,10 @@ useEffect(() => {
                   <Line 
                     type="monotone" 
                     dataKey="students" 
-                    stroke="#8884d8" 
+                    stroke="#FF7409"
                     strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 8 }}
+                    dot={{ r: 4, fill: "#FF7409" }}
+                    activeDot={{ r: 8, fill: "#FF7409" }}
                   />
                 </LineChart>
               </ResponsiveContainer>

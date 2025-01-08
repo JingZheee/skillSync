@@ -140,9 +140,48 @@ export default function LandingPage() {
         <Typography variant="h6" color="textSecondary" sx={{ mb: 4 }}>
           Join SkillSync today and start your path to success
         </Typography>
-        <Button variant="contained" size="large">
-          Register Now
-        </Button>
+        
+        {/* Register Buttons */}
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={3} 
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Button 
+            variant="contained" 
+            size="large"
+            startIcon={<SchoolIcon />}
+            sx={{
+              backgroundColor: '#FBAC01',
+              '&:hover': {
+                backgroundColor: '#FBAC01',
+              },
+              minWidth: 200,
+              py: 1.5
+            }}
+          >
+            Register as Student
+          </Button>
+          <Button 
+            variant="outlined" 
+            size="large"
+            startIcon={<BusinessIcon />}
+            sx={{
+              borderColor: '#FF7409',
+              color: '#FF7409',
+              '&:hover': {
+                borderColor: '#FF4F09',
+                color: '#FF4F09',
+                backgroundColor: 'rgba(255, 116, 9, 0.04)'
+              },
+              minWidth: 200,
+              py: 1.5
+            }}
+          >
+            Register as Employer
+          </Button>
+        </Stack>
       </Box>
     </Container>
   );
