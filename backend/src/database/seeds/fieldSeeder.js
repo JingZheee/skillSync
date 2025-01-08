@@ -1,4 +1,4 @@
-const { Field } = require("../../models");
+const { Field, SubField } = require("../../models");
 
 const mainFields = [
   {
@@ -42,31 +42,29 @@ const mainFields = [
 
 async function seedFields() {
   try {
-    // Clear existing fields
+    // Clear existing fields and subfields
     await Field.deleteMany({});
+    await SubField.deleteMany({});
 
-    // First create main fields
-    const createdMainFields = {};
-
+    // Create main fields and their subfields
     for (const field of mainFields) {
+      // Create main field
       const mainField = await Field.create({
         name: field.name,
         description: field.description,
-        mainField: null,
       });
-      createdMainFields[field.name] = mainField._id;
 
-      // Create subfields with reference to main field
-      for (const subfield of field.subfields) {
-        await Field.create({
-          name: subfield,
+      // Create subfields for this main field
+      for (const subFieldName of field.subfields) {
+        await SubField.create({
+          name: subFieldName,
           description: `Subfield of ${field.name}`,
-          mainField: mainField._id,
+          field: mainField._id,
         });
       }
     }
 
-    console.log("� Fields seeded successfully");
+    console.log("✅ Fields and subfields seeded successfully");
   } catch (error) {
     console.error("❌ Error seeding fields:", error);
     throw error;

@@ -1,5 +1,6 @@
 const BaseService = require("../base.service");
-const StudentHackathon = require("../../models/studentHackathon");
+const Student = require("../../models/student");
+
 class HackathonService extends BaseService {
   constructor(model) {
     super(model);
@@ -10,19 +11,19 @@ class HackathonService extends BaseService {
   }
 
   async findParticipants(hackathonId) {
-    const registrations = await StudentHackathon.find({
-      hackathon: hackathonId,
+    const students = await Student.find({
+      studentHackathons: hackathonId,
       deleted_at: null,
-    }).populate("student");
+    }).select("-password");
 
-    return registrations.map((registration) => registration.student);
+    return students;
   }
 
   async registerStudent(hackathonId, studentId) {
     // Check if maximum participants limit is reached
     const hackathon = await this.findById(hackathonId);
-    const currentParticipants = await StudentHackathon.countDocuments({
-      hackathon: hackathonId,
+    const currentParticipants = await Student.countDocuments({
+      studentHackathons: hackathonId,
       deleted_at: null,
     });
 
@@ -33,23 +34,25 @@ class HackathonService extends BaseService {
       throw new Error("Maximum participants limit reached");
     }
 
-    const registration = new StudentHackathon({
-      hackathon: hackathonId,
-      student: studentId,
-    });
-    return await registration.save();
+    return await Student.findByIdAndUpdate(
+      studentId,
+      {
+        $addToSet: { studentHackathons: hackathonId },
+        $set: { updated_at: new Date() },
+      },
+      { new: true }
+    ).populate("studentHackathons");
   }
 
   async unregisterStudent(hackathonId, studentId) {
-    return await StudentHackathon.findOneAndUpdate(
+    return await Student.findByIdAndUpdate(
+      studentId,
       {
-        hackathon: hackathonId,
-        student: studentId,
-        deleted_at: null,
+        $pull: { studentHackathons: hackathonId },
+        $set: { updated_at: new Date() },
       },
-      { deleted_at: new Date() },
       { new: true }
-    );
+    ).populate("studentHackathons");
   }
 
   async findChallenges(hackathonId) {

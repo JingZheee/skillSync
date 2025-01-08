@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
-const studentChallengeSchema = new mongoose.Schema(
+const submissionSchema = new mongoose.Schema(
   {
-    student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
-    miniChallenge: {
+    studentChallenge: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "MiniChallenge",
+      ref: "StudentChallenge",
+      required: true,
     },
     status: {
       type: String,
@@ -22,7 +22,11 @@ const studentChallengeSchema = new mongoose.Schema(
       },
     ],
     notes: String,
-    submittedDate: { type: Date },
+    feedback: String,
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    reviewedAt: { type: Date },
+    submittedAt: { type: Date, default: Date.now },
+    deleted_at: Date,
   },
   {
     timestamps: {
@@ -32,11 +36,6 @@ const studentChallengeSchema = new mongoose.Schema(
   }
 );
 
-studentChallengeSchema.add({ deleted_at: Date });
+const Submission = mongoose.model("Submission", submissionSchema);
 
-const StudentChallenge = mongoose.model(
-  "StudentChallenge",
-  studentChallengeSchema
-);
-
-module.exports = StudentChallenge;
+module.exports = Submission;

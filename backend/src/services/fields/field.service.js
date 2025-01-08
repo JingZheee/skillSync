@@ -1,15 +1,16 @@
 const BaseService = require("../base.service");
-const { Field, Student, Tag } = require("../../models");
+const { Student, Tag, SubField, StudentField } = require("../../models");
+
 class FieldService extends BaseService {
   constructor(model) {
     super(model);
   }
 
   async findStudents(fieldId) {
-    return await Student.find({
+    return await StudentField.find({
       field: fieldId,
       deleted_at: null,
-    });
+    }).populate("student");
   }
 
   async findTags(fieldId) {
@@ -19,19 +20,72 @@ class FieldService extends BaseService {
     });
   }
 
-  async findAll(filter = {}, options = {}) {
-    return await super.findAll(filter, {
-      ...options,
-      sort: { name: 1 },
-    });
-  }
-
   async findMainField(fieldId) {
-    return await Field.findById(fieldId).populate("mainField");
+    const subfield = await SubField.findOne({ _id: fieldId }).populate("field");
+    return subfield ? subfield.field : null;
   }
 
   async findSubFields(fieldId) {
-    return await Field.find({ mainField: fieldId });
+    return await SubField.find({
+      field: fieldId,
+      deleted_at: null,
+    });
+  }
+
+  async assignStudentToField(studentId, fieldId, subFieldIds = []) {
+    const existingAssignment = await StudentField.findOne({
+      student: studentId,
+      field: fieldId,
+      deleted_at: null,
+    });
+
+    if (existingAssignment) {
+      existingAssignment.subFields = [
+        ...new Set([...existingAssignment.subFields, ...subFieldIds]),
+      ];
+      return await existingAssignment.save();
+    }
+
+    return await StudentField.create({
+      student: studentId,
+      field: fieldId,
+      subFields: subFieldIds,
+    });
+  }
+
+  async getStudentFields(studentId) {
+    return await StudentField.find({
+      student: studentId,
+      deleted_at: null,
+    })
+      .populate("field")
+      .populate("subFields");
+  }
+
+  async getFieldHierarchy(fieldId) {
+    const field = await this.model.findById(fieldId);
+    const subFields = await SubField.find({
+      field: fieldId,
+      deleted_at: null,
+    });
+
+    return {
+      ...field.toObject(),
+      subFields: subFields,
+    };
+  }
+
+  async findAllSubFields(fieldId) {
+    const subfields = await SubField.find({
+      field: fieldId,
+      deleted_at: null,
+    }).populate("field");
+
+    if (!subfields.length) {
+      throw new Error("No subfields found for this field");
+    }
+
+    return subfields;
   }
 }
 

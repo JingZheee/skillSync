@@ -1,5 +1,5 @@
-'use client';
-import React, { useState } from 'react';
+"use client";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Paper,
@@ -21,95 +21,136 @@ import {
   Alert,
   List,
   ListItem,
-} from '@mui/material';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useRouter } from 'next/navigation';
-import FileUpload from '@/components/FileUpload';
+} from "@mui/material";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useRouter } from "next/navigation";
+import FileUpload from "@/components/FileUpload";
+import ApiService from "@/api/apiService";
+import { API } from "@/api/endpoints";
 
 const steps = [
-  'Basic Information',
-  'Challenge Details',
-  'Instructions & Resources',
-  'Evaluation Criteria',
-  'Review'
+  "Basic Information",
+  "Challenge Details",
+  "Instructions & Resources",
+  "Evaluation Criteria",
+  "Review",
 ];
-
-const categoryConfig = {
-  Technology: {
-    subCategories: ['Web Development', 'Mobile Development', 'Cloud Computing', 'Data Science', 'Cybersecurity'],
-    skills: ['JavaScript', 'Python', 'React', 'Node.js', 'AWS', 'Machine Learning'],
-  },
-  Business: {
-    subCategories: ['Strategy', 'Operations', 'Management', 'Entrepreneurship'],
-    skills: ['Business Analysis', 'Project Management', 'Strategic Planning', 'Leadership'],
-  },
-  Finance: {
-    subCategories: ['Investment', 'FinTech', 'Risk Management', 'Trading'],
-    skills: ['Financial Analysis', 'Risk Assessment', 'Blockchain', 'Trading Strategies'],
-  },
-  Design: {
-    subCategories: ['UI/UX', 'Graphic Design', 'Product Design', 'Brand Design'],
-    skills: ['UI Design', 'User Research', 'Wireframing', 'Prototyping'],
-  },
-  Marketing: {
-    subCategories: ['Digital Marketing', 'Content Marketing', 'Social Media', 'SEO'],
-    skills: ['Social Media Marketing', 'Content Strategy', 'Analytics', 'SEO Optimization'],
-  }
-};
 
 export default function CreateChallengePage() {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    subCategory: '',
-    difficulty: '',
-    timeEstimate: '',
+    title: "",
+    description: "",
+    category: "",
+    subCategory: "",
+    difficulty: "",
+    timeEstimate: "",
+    points: 100,
     skills: [],
-    objectives: [''],
-    instructions: [''],
-    resources: [{ title: '', url: '' }],
-    submissionGuidelines: [''],
-    evaluationCriteria: [''],
+    objectives: [""],
+    instructions: [""],
+    resources: [{ title: "", url: "" }],
+    submissionGuidelines: [""],
+    evaluationCriteria: [""],
     files: [],
   });
+  const [fields, setFields] = useState([]);
+  const [subFields, setSubFields] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFields = async () => {
+      try {
+        const fieldsResponse = await ApiService.get(API.fields.findAll);
+        const fieldsData = fieldsResponse.data.data.data || [];
+        setFields(Array.isArray(fieldsData) ? fieldsData : []);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching fields:", error);
+        setFields([]);
+        setLoading(false);
+      }
+    };
+
+    fetchFields();
+  }, []);
+
+  const fetchFieldDependencies = async (fieldId) => {
+    try {
+      const subFieldsResponse = await ApiService.get(
+        API.fields.findAllSub.replace(":id", fieldId)
+      );
+      const subFieldsData = subFieldsResponse.data.data || [];
+
+      setSubFields(subFieldsData);
+
+      const tagsResponse = await ApiService.get(
+        API.tags.findByField.replace(":fieldId", fieldId)
+      );
+      const tagsData = tagsResponse.data.data.data || [];
+      console.log(tagsData);
+      setTags(tagsData);
+    } catch (error) {
+      console.error("Error fetching field dependencies:", error);
+    }
+  };
+
+  const handleFieldChange = async (value) => {
+    handleChange("category", value);
+    handleChange("subCategory", "");
+    handleChange("skills", []);
+
+    if (value) {
+      await fetchFieldDependencies(value);
+    } else {
+      setSubFields([]);
+      setTags([]);
+    }
+  };
 
   const validateStep = (step) => {
     const newErrors = {};
 
     switch (step) {
       case 0:
-        if (!formData.title.trim()) newErrors.title = 'Title is required';
-        if (!formData.description.trim()) newErrors.description = 'Description is required';
-        if (!formData.category) newErrors.category = 'Category is required';
-        if (!formData.subCategory) newErrors.subCategory = 'Sub-category is required';
+        if (!formData.title.trim()) newErrors.title = "Title is required";
+        if (!formData.description.trim())
+          newErrors.description = "Description is required";
+        if (!formData.category) newErrors.category = "Category is required";
+        if (!formData.subCategory)
+          newErrors.subCategory = "Sub-category is required";
         break;
 
       case 1:
-        if (!formData.difficulty) newErrors.difficulty = 'Difficulty is required';
-        if (!formData.timeEstimate.trim()) newErrors.timeEstimate = 'Time estimate is required';
-        if (formData.skills.length === 0) newErrors.skills = 'At least one skill is required';
+        if (!formData.difficulty)
+          newErrors.difficulty = "Difficulty is required";
+        if (!formData.timeEstimate.trim())
+          newErrors.timeEstimate = "Time estimate is required";
+        if (formData.skills.length === 0)
+          newErrors.skills = "At least one skill is required";
         break;
 
       case 2:
-        if (formData.objectives.some(obj => !obj.trim())) {
-          newErrors.objectives = 'All objectives must be filled';
+        if (formData.objectives.some((obj) => !obj.trim())) {
+          newErrors.objectives = "All objectives must be filled";
         }
-        if (formData.instructions.some(inst => !inst.trim())) {
-          newErrors.instructions = 'All instructions must be filled';
+        if (formData.instructions.some((inst) => !inst.trim())) {
+          newErrors.instructions = "All instructions must be filled";
         }
         break;
 
       case 3:
-        if (formData.submissionGuidelines.some(guide => !guide.trim())) {
-          newErrors.submissionGuidelines = 'All submission guidelines must be filled';
+        if (formData.submissionGuidelines.some((guide) => !guide.trim())) {
+          newErrors.submissionGuidelines =
+            "All submission guidelines must be filled";
         }
-        if (formData.evaluationCriteria.some(criteria => !criteria.trim())) {
-          newErrors.evaluationCriteria = 'All evaluation criteria must be filled';
+        if (formData.evaluationCriteria.some((criteria) => !criteria.trim())) {
+          newErrors.evaluationCriteria =
+            "All evaluation criteria must be filled";
         }
         break;
 
@@ -134,52 +175,84 @@ export default function CreateChallengePage() {
   const handleSubmit = async () => {
     if (validateStep(activeStep)) {
       try {
-        // Log the final form data
-        console.log('Submitting challenge:', {
-          ...formData,
-          files: formData.files.map(file => ({
-            name: file.name,
-            size: file.size,
-            type: file.type
-          }))
+        const submitFormData = new FormData();
+
+        formData.files?.forEach((file) => {
+          console.log("Adding file:", file.name);
+          submitFormData.append("files", file);
         });
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Redirect to challenges page
-        router.push('/challenges');
+
+        const challengeData = {
+          title: formData.title,
+          description: formData.description,
+          field: {
+            main: formData.category,
+            sub: [formData.subCategory],
+          },
+          difficulty: formData.difficulty.toLowerCase(),
+          timeEstimate: parseInt(formData.timeEstimate),
+          learningObjective: formData.objectives,
+          stepToStepInstructions: formData.instructions,
+          additionalResources: formData.resources,
+          submissionGuidelines: formData.submissionGuidelines,
+          evaluationCriteria: formData.evaluationCriteria,
+          tags: formData.skills.map((tag) => tag._id),
+        };
+
+        console.log("Challenge data before stringify:", challengeData);
+
+        submitFormData.append("data", challengeData);
+
+        const response = await ApiService.post(
+          API.challenges.create,
+          challengeData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        console.log("Response:", response);
+
+        // if (response.data.success) {
+        //   router.push("/company/challenges");
+        // } else {
+        //   throw new Error(
+        //     response.data.message || "Failed to create challenge"
+        //   );
+        // }
       } catch (error) {
-        console.error('Error creating challenge:', error);
+        console.error("Error creating challenge:", error);
       }
     }
   };
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const handleArrayChange = (field, index, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].map((item, i) => i === index ? value : item)
+      [field]: prev[field].map((item, i) => (i === index ? value : item)),
     }));
   };
 
   const addArrayItem = (field, defaultValue) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: [...prev[field], defaultValue]
+      [field]: [...prev[field], defaultValue],
     }));
   };
 
   const removeArrayItem = (field, index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].filter((_, i) => i !== index)
+      [field]: prev[field].filter((_, i) => i !== index),
     }));
   };
 
@@ -191,15 +264,15 @@ export default function CreateChallengePage() {
             <TextField
               label="Challenge Title"
               value={formData.title}
-              onChange={(e) => handleChange('title', e.target.value)}
+              onChange={(e) => handleChange("title", e.target.value)}
               fullWidth
               required
             />
-            
+
             <TextField
               label="Description"
               value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              onChange={(e) => handleChange("description", e.target.value)}
               multiline
               rows={4}
               fullWidth
@@ -207,37 +280,35 @@ export default function CreateChallengePage() {
             />
 
             <FormControl fullWidth required>
-              <InputLabel>Category</InputLabel>
+              <InputLabel>Field</InputLabel>
               <Select
                 value={formData.category}
-                label="Category"
-                onChange={(e) => {
-                  handleChange('category', e.target.value);
-                  handleChange('subCategory', '');
-                  handleChange('skills', []);
-                }}
+                label="Field"
+                onChange={(e) => handleFieldChange(e.target.value)}
               >
-                {Object.keys(categoryConfig).map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
+                {Array.isArray(fields) &&
+                  fields.map((field) => (
+                    <MenuItem key={field._id} value={field._id}>
+                      {field.name}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
 
             {formData.category && (
               <FormControl fullWidth required>
-                <InputLabel>Sub-Category</InputLabel>
+                <InputLabel>Sub-Field</InputLabel>
                 <Select
                   value={formData.subCategory}
-                  label="Sub-Category"
-                  onChange={(e) => handleChange('subCategory', e.target.value)}
+                  label="Sub-Field"
+                  onChange={(e) => handleChange("subCategory", e.target.value)}
                 >
-                  {categoryConfig[formData.category].subCategories.map((subCategory) => (
-                    <MenuItem key={subCategory} value={subCategory}>
-                      {subCategory}
-                    </MenuItem>
-                  ))}
+                  {Array.isArray(subFields) &&
+                    subFields.map((subField) => (
+                      <MenuItem key={subField._id} value={subField._id}>
+                        {subField.name}
+                      </MenuItem>
+                    ))}
                 </Select>
               </FormControl>
             )}
@@ -252,9 +323,9 @@ export default function CreateChallengePage() {
               <Select
                 value={formData.difficulty}
                 label="Difficulty"
-                onChange={(e) => handleChange('difficulty', e.target.value)}
+                onChange={(e) => handleChange("difficulty", e.target.value)}
               >
-                {['Easy', 'Medium', 'Hard'].map((level) => (
+                {["Easy", "Medium", "Hard"].map((level) => (
                   <MenuItem key={level} value={level}>
                     {level}
                   </MenuItem>
@@ -265,7 +336,7 @@ export default function CreateChallengePage() {
             <TextField
               label="Time Estimate"
               value={formData.timeEstimate}
-              onChange={(e) => handleChange('timeEstimate', e.target.value)}
+              onChange={(e) => handleChange("timeEstimate", e.target.value)}
               fullWidth
               required
               InputProps={{
@@ -280,15 +351,12 @@ export default function CreateChallengePage() {
             {formData.category && (
               <Autocomplete
                 multiple
-                options={categoryConfig[formData.category].skills}
+                options={tags ?? []}
                 value={formData.skills}
-                onChange={(_, newValue) => handleChange('skills', newValue)}
+                onChange={(_, newValue) => handleChange("skills", newValue)}
+                getOptionLabel={(option) => option.name || option}
                 renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Required Skills"
-                    required
-                  />
+                  <TextField {...params} label="Required Skills" required />
                 )}
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => {
@@ -297,7 +365,7 @@ export default function CreateChallengePage() {
                     return (
                       <Chip
                         key={key}
-                        label={option}
+                        label={option.name || option}
                         {...chipProps}
                       />
                     );
@@ -317,24 +385,26 @@ export default function CreateChallengePage() {
                 Learning Objectives
               </Typography>
               {formData.objectives.map((objective, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box key={index} sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <TextField
                     value={objective}
-                    onChange={(e) => handleArrayChange('objectives', index, e.target.value)}
+                    onChange={(e) =>
+                      handleArrayChange("objectives", index, e.target.value)
+                    }
                     fullWidth
                     required
                   />
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     color="error"
-                    onClick={() => removeArrayItem('objectives', index)}
+                    onClick={() => removeArrayItem("objectives", index)}
                     disabled={formData.objectives.length === 1}
                   >
                     Remove
                   </Button>
                 </Box>
               ))}
-              <Button onClick={() => addArrayItem('objectives', '')}>
+              <Button onClick={() => addArrayItem("objectives", "")}>
                 Add Objective
               </Button>
             </Box>
@@ -351,7 +421,7 @@ export default function CreateChallengePage() {
                 maxFiles={5}
                 maxFileSize={5}
                 files={formData.files}
-                onFilesChange={(files) => handleChange('files', files)}
+                onFilesChange={(files) => handleChange("files", files)}
               />
             </Box>
 
@@ -361,24 +431,26 @@ export default function CreateChallengePage() {
                 Step-by-Step Instructions
               </Typography>
               {formData.instructions.map((instruction, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box key={index} sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <TextField
                     value={instruction}
-                    onChange={(e) => handleArrayChange('instructions', index, e.target.value)}
+                    onChange={(e) =>
+                      handleArrayChange("instructions", index, e.target.value)
+                    }
                     fullWidth
                     required
                   />
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     color="error"
-                    onClick={() => removeArrayItem('instructions', index)}
+                    onClick={() => removeArrayItem("instructions", index)}
                     disabled={formData.instructions.length === 1}
                   >
                     Remove
                   </Button>
                 </Box>
               ))}
-              <Button onClick={() => addArrayItem('instructions', '')}>
+              <Button onClick={() => addArrayItem("instructions", "")}>
                 Add Instruction
               </Button>
             </Box>
@@ -389,30 +461,44 @@ export default function CreateChallengePage() {
                 Additional Resources
               </Typography>
               {formData.resources.map((resource, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box key={index} sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <TextField
                     label="Title"
                     value={resource.title}
-                    onChange={(e) => handleArrayChange('resources', index, { ...resource, title: e.target.value })}
+                    onChange={(e) =>
+                      handleArrayChange("resources", index, {
+                        ...resource,
+                        title: e.target.value,
+                      })
+                    }
                     sx={{ flex: 1 }}
                   />
                   <TextField
                     label="URL"
                     value={resource.url}
-                    onChange={(e) => handleArrayChange('resources', index, { ...resource, url: e.target.value })}
+                    onChange={(e) =>
+                      handleArrayChange("resources", index, {
+                        ...resource,
+                        url: e.target.value,
+                      })
+                    }
                     sx={{ flex: 2 }}
                   />
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     color="error"
-                    onClick={() => removeArrayItem('resources', index)}
+                    onClick={() => removeArrayItem("resources", index)}
                     disabled={formData.resources.length === 1}
                   >
                     Remove
                   </Button>
                 </Box>
               ))}
-              <Button onClick={() => addArrayItem('resources', { title: '', url: '' })}>
+              <Button
+                onClick={() =>
+                  addArrayItem("resources", { title: "", url: "" })
+                }
+              >
                 Add Resource
               </Button>
             </Box>
@@ -428,24 +514,32 @@ export default function CreateChallengePage() {
                 Submission Guidelines
               </Typography>
               {formData.submissionGuidelines.map((guideline, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box key={index} sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <TextField
                     value={guideline}
-                    onChange={(e) => handleArrayChange('submissionGuidelines', index, e.target.value)}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "submissionGuidelines",
+                        index,
+                        e.target.value
+                      )
+                    }
                     fullWidth
                     required
                   />
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     color="error"
-                    onClick={() => removeArrayItem('submissionGuidelines', index)}
+                    onClick={() =>
+                      removeArrayItem("submissionGuidelines", index)
+                    }
                     disabled={formData.submissionGuidelines.length === 1}
                   >
                     Remove
                   </Button>
                 </Box>
               ))}
-              <Button onClick={() => addArrayItem('submissionGuidelines', '')}>
+              <Button onClick={() => addArrayItem("submissionGuidelines", "")}>
                 Add Guideline
               </Button>
             </Box>
@@ -456,24 +550,30 @@ export default function CreateChallengePage() {
                 Evaluation Criteria
               </Typography>
               {formData.evaluationCriteria.map((criteria, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box key={index} sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <TextField
                     value={criteria}
-                    onChange={(e) => handleArrayChange('evaluationCriteria', index, e.target.value)}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "evaluationCriteria",
+                        index,
+                        e.target.value
+                      )
+                    }
                     fullWidth
                     required
                   />
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
                     color="error"
-                    onClick={() => removeArrayItem('evaluationCriteria', index)}
+                    onClick={() => removeArrayItem("evaluationCriteria", index)}
                     disabled={formData.evaluationCriteria.length === 1}
                   >
                     Remove
                   </Button>
                 </Box>
               ))}
-              <Button onClick={() => addArrayItem('evaluationCriteria', '')}>
+              <Button onClick={() => addArrayItem("evaluationCriteria", "")}>
                 Add Criteria
               </Button>
             </Box>
@@ -494,16 +594,24 @@ export default function CreateChallengePage() {
               </Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Title</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Title
+                  </Typography>
                   <Typography>{formData.title}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Description</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Description
+                  </Typography>
                   <Typography>{formData.description}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Category</Typography>
-                  <Typography>{formData.category} → {formData.subCategory}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Category
+                  </Typography>
+                  <Typography>
+                    {formData.category} → {formData.subCategory}
+                  </Typography>
                 </Box>
               </Stack>
             </Paper>
@@ -515,18 +623,26 @@ export default function CreateChallengePage() {
               </Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Difficulty</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Difficulty
+                  </Typography>
                   <Typography>{formData.difficulty}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Time Estimate</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Time Estimate
+                  </Typography>
                   <Typography>{formData.timeEstimate}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Required Skills</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Required Skills
+                  </Typography>
+                  <Box
+                    sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}
+                  >
                     {formData.skills.map((skill, index) => (
-                      <Chip key={index} label={skill} size="small" />
+                      <Chip key={index} label={skill.name} size="small" />
                     ))}
                   </Box>
                 </Box>
@@ -540,7 +656,9 @@ export default function CreateChallengePage() {
               </Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Learning Objectives</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Learning Objectives
+                  </Typography>
                   <List dense>
                     {formData.objectives.map((objective, index) => (
                       <ListItem key={index}>
@@ -550,7 +668,9 @@ export default function CreateChallengePage() {
                   </List>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Instructions</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Instructions
+                  </Typography>
                   <List dense>
                     {formData.instructions.map((instruction, index) => (
                       <ListItem key={index}>
@@ -560,23 +680,37 @@ export default function CreateChallengePage() {
                   </List>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Resources</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Resources
+                  </Typography>
                   <List dense>
                     {formData.resources.map((resource, index) => (
                       <ListItem key={index}>
                         <Typography>
-                          • {resource.title}: <a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.url}</a>
+                          • {resource.title}:{" "}
+                          <a
+                            href={resource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {resource.url}
+                          </a>
                         </Typography>
                       </ListItem>
                     ))}
                   </List>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Uploaded Files</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Uploaded Files
+                  </Typography>
                   <List dense>
                     {formData.files.map((file, index) => (
                       <ListItem key={index}>
-                        <Typography>• {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</Typography>
+                        <Typography>
+                          • {file.name} ({(file.size / 1024 / 1024).toFixed(2)}{" "}
+                          MB)
+                        </Typography>
                       </ListItem>
                     ))}
                   </List>
@@ -591,7 +725,9 @@ export default function CreateChallengePage() {
               </Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Submission Guidelines</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Submission Guidelines
+                  </Typography>
                   <List dense>
                     {formData.submissionGuidelines.map((guideline, index) => (
                       <ListItem key={index}>
@@ -601,7 +737,9 @@ export default function CreateChallengePage() {
                   </List>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Evaluation Criteria</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Evaluation Criteria
+                  </Typography>
                   <List dense>
                     {formData.evaluationCriteria.map((criteria, index) => (
                       <ListItem key={index}>
@@ -657,21 +795,20 @@ export default function CreateChallengePage() {
           {renderStepContent()}
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-          <Button
-            disabled={activeStep === 0}
-            onClick={handleBack}
-          >
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
+          <Button disabled={activeStep === 0} onClick={handleBack}>
             Back
           </Button>
           <Button
             variant="contained"
-            onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
+            onClick={
+              activeStep === steps.length - 1 ? handleSubmit : handleNext
+            }
           >
-            {activeStep === steps.length - 1 ? 'Create Challenge' : 'Next'}
+            {activeStep === steps.length - 1 ? "Create Challenge" : "Next"}
           </Button>
         </Box>
       </Paper>
     </Container>
   );
-} 
+}

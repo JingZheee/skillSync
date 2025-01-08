@@ -1,7 +1,6 @@
 const BaseService = require("../base.service");
-const StudentChallenge = require("../../models/studentChallenge");
-const fs = require("fs").promises;
-const path = require("path");
+const Student = require("../../models/student");
+const Submission = require("../../models/submission");
 
 class ChallengeService extends BaseService {
   constructor(model) {
@@ -9,71 +8,133 @@ class ChallengeService extends BaseService {
   }
 
   async findByCompany(companyId) {
-    return await this.findAll({ company: companyId });
+    return await this.findAll(
+      { company: companyId, deleted_at: null },
+      {
+        populate: [
+          { path: "field.main" },
+          { path: "field.sub" },
+          { path: "tags" },
+          { path: "company" },
+        ],
+      }
+    );
   }
 
   async findByHackathon(hackathonId) {
-    return await this.findAll({ hackathon: hackathonId });
+    return await this.findAll(
+      { hackathon: hackathonId, deleted_at: null },
+      {
+        populate: [
+          { path: "field.main" },
+          { path: "field.sub" },
+          { path: "tags" },
+          { path: "company" },
+        ],
+      }
+    );
   }
 
   async findStudentSubmissions(challengeId) {
-    return await StudentChallenge.find({
-      miniChallenge: challengeId,
+    const students = await Student.find({
+      studentChallenges: challengeId,
       deleted_at: null,
-    }).populate(["student", "miniChallenge"]);
+    })
+      .select("-password")
+      .populate({
+        path: "submissions",
+        match: { challenge: challengeId, deleted_at: null },
+        populate: {
+          path: "reviewer",
+          select: "name email",
+        },
+      });
+
+    return students;
   }
 
   async submitChallenge(challengeId, studentId, uploadedFiles, notes) {
-    // Check if student has already submitted
-    const existingSubmission = await StudentChallenge.findOne({
-      miniChallenge: challengeId,
-      student: studentId,
-      deleted_at: null,
-    });
+    const student = await Student.findById(studentId);
 
-    if (existingSubmission) {
-      throw new Error("Student has already submitted this challenge");
+    if (student.studentChallenges.includes(challengeId)) {
+      throw new Error("Student has already registered for this challenge");
     }
 
-    // Create new submission
-    const submission = new StudentChallenge({
+    // Create submission
+    const submission = new Submission({
       student: studentId,
-      miniChallenge: challengeId,
+      challenge: challengeId,
       submittedFiles: uploadedFiles,
       notes: notes,
-      submittedDate: new Date(),
       status: "Pending",
     });
 
-    return await submission.save();
+    await submission.save();
+
+    // Update student record
+    await Student.findByIdAndUpdate(studentId, {
+      $addToSet: {
+        studentChallenges: challengeId,
+        submissions: submission._id,
+      },
+      $set: { updated_at: new Date() },
+    });
+
+    return submission;
   }
 
-  async updateSubmissionStatus(submissionId, status) {
-    if (!["Pending", "Approved", "Rejected"].includes(status)) {
-      throw new Error("Invalid status");
+  async updateSubmissionStatus(submissionId, reviewerId, feedback) {
+    const submission = await Submission.findOneAndUpdate(
+      { _id: submissionId, deleted_at: null },
+      {
+        feedback,
+        reviewer: reviewerId,
+        reviewedAt: new Date(),
+      },
+      { new: true }
+    ).populate([
+      {
+        path: "reviewer",
+        select: "name email",
+      },
+    ]);
+
+    if (!submission) {
+      throw new Error("Submission not found");
     }
 
-    return await StudentChallenge.findOneAndUpdate(
-      { _id: submissionId, deleted_at: null },
-      { status },
-      { new: true }
-    ).populate(["student", "miniChallenge"]);
+    return submission;
   }
 
   async findAll(filter = {}, options = {}) {
-    return await super.findAll(filter, {
-      ...options,
-      populate: ["company", "hackathon", "tags"],
-    });
+    return await super.findAll(
+      { ...filter, deleted_at: null },
+      {
+        populate: [
+          { path: "field.main" },
+          { path: "field.sub" },
+          { path: "tags" },
+          { path: "company" },
+          { path: "hackathon" },
+        ],
+        ...options,
+      }
+    );
   }
 
   async findById(id) {
-    return await super.findById(id, ["company", "hackathon", "tags"]);
+    return await super.findById(id, [
+      { path: "field.main" },
+      { path: "field.sub" },
+      { path: "tags" },
+      { path: "company" },
+      { path: "hackathon" },
+    ]);
   }
 
   async create(data) {
     try {
-      // Validate files
+      // Validate files if present
       if (data.challengeFiles) {
         const totalSize = data.challengeFiles.reduce(
           (sum, file) => sum + file.size,
@@ -85,8 +146,7 @@ class ChallengeService extends BaseService {
         }
       }
 
-      const challenge = await super.create(data);
-      return challenge;
+      return await super.create(data);
     } catch (error) {
       // Clean up files if challenge creation fails
       if (data.challengeFiles) {
@@ -110,6 +170,61 @@ class ChallengeService extends BaseService {
       );
     }
     return await super.delete(id);
+  }
+
+  async getAllSubmissions() {
+    return await Submission.find({ deleted_at: null })
+      .populate([
+        {
+          path: "studentChallenge",
+          populate: [
+            {
+              path: "student",
+              select: "-password",
+            },
+            {
+              path: "challenge",
+              select: "title description",
+            },
+          ],
+        },
+        {
+          path: "reviewer",
+          select: "name email",
+        },
+      ])
+      .sort({ created_at: -1 });
+  }
+
+  async getSubmissionById(submissionId) {
+    const submission = await Submission.findOne({
+      _id: submissionId,
+      deleted_at: null,
+    }).populate([
+      {
+        path: "studentChallenge",
+        populate: [
+          {
+            path: "student",
+            select: "-password",
+          },
+          {
+            path: "challenge",
+            select: "title description evaluationCriteria",
+          },
+        ],
+      },
+      {
+        path: "reviewer",
+        select: "name email",
+      },
+    ]);
+
+    if (!submission) {
+      throw new Error("Submission not found");
+    }
+
+    return submission;
   }
 }
 

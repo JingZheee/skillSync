@@ -8,7 +8,7 @@ class BaseService {
       populate = [],
       sort = { created_at: -1 },
       page = 1,
-      limit = 10,
+      limit = 999,
     } = options;
 
     const skip = (page - 1) * limit;

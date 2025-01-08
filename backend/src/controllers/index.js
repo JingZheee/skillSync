@@ -22,6 +22,9 @@ const Field = require("../models/field");
 const RankingController = require("./rankings/ranking.controller");
 const RankingService = require("../services/rankings/ranking.service");
 const Ranking = require("../models/ranking");
+const SubmissionController = require("./submissions/submission.controller");
+const SubmissionService = require("../services/submissions/submission.service");
+const Submission = require("../models/submission");
 
 module.exports = [
   {
@@ -63,5 +66,10 @@ module.exports = [
     Controller: RankingController,
     Service: RankingService,
     Model: Ranking,
+  },
+  {
+    Controller: SubmissionController,
+    Service: SubmissionService,
+    Model: Submission,
   },
 ];

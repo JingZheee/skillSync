@@ -1,15 +1,14 @@
 const BaseController = require("../base.controller");
 const ResponseType = require("../../types/responseType");
+
 class FieldController extends BaseController {
   constructor(service) {
     super(service);
-
     this.initializeRoutes = this.initializeRoutes.bind(this);
 
-    this.getStudents = this.getStudents.bind(this);
-    this.getTags = this.getTags.bind(this);
-    this.getMainField = this.getMainField.bind(this);
-    this.getSubFields = this.getSubFields.bind(this);
+    this.assignStudent = this.assignStudent.bind(this);
+    this.getStudentFields = this.getStudentFields.bind(this);
+    this.getAllSubFields = this.getAllSubFields.bind(this);
   }
 
   getPath() {
@@ -19,49 +18,46 @@ class FieldController extends BaseController {
   initializeRoutes() {
     super.initializeRoutes();
 
-    this.router.get("/:id/students", (req, res) => this.getStudents(req, res));
-    this.router.get("/:id/tags", (req, res) => this.getTags(req, res));
-    this.router.get("/:id/main", (req, res) => this.getMainField(req, res));
+    this.router.post("/:id/assign/:studentId", (req, res) =>
+      this.assignStudent(req, res)
+    );
+    this.router.get("/student/:studentId", (req, res) =>
+      this.getStudentFields(req, res)
+    );
     this.router.get("/:id/subfields", (req, res) =>
-      this.getSubFields(req, res)
+      this.getAllSubFields(req, res)
     );
   }
 
-  async getStudents(req, res) {
+  async assignStudent(req, res) {
     try {
-      const { id } = req.params;
-      const data = await this.service.findStudents(id);
+      const { id: fieldId, studentId } = req.params;
+      const { subFieldIds } = req.body;
+      const data = await this.service.assignStudentToField(
+        studentId,
+        fieldId,
+        subFieldIds
+      );
+      res.json(ResponseType.success(data, "Student assigned successfully"));
+    } catch (error) {
+      res.status(500).json(ResponseType.error(error.message));
+    }
+  }
+
+  async getStudentFields(req, res) {
+    try {
+      const { studentId } = req.params;
+      const data = await this.service.getStudentFields(studentId);
       res.json(ResponseType.success(data));
     } catch (error) {
       res.status(500).json(ResponseType.error(error.message));
     }
   }
 
-  async getTags(req, res) {
+  async getAllSubFields(req, res) {
     try {
-      const { id } = req.params;
-      const data = await this.service.findTags(id);
-      res.json(ResponseType.success(data));
-    } catch (error) {
-      res.status(500).json(ResponseType.error(error.message));
-    }
-  }
-
-  async getMainField(req, res) {
-    console.log("this.service", this.service);
-    try {
-      const { id } = req.params;
-      const data = await this.service.findMainField(id);
-      res.json(ResponseType.success(data));
-    } catch (error) {
-      res.status(500).json(ResponseType.error(error.message));
-    }
-  }
-
-  async getSubFields(req, res) {
-    try {
-      const { id } = req.params;
-      const data = await this.service.findSubFields(id);
+      const { id: fieldId } = req.params;
+      const data = await this.service.findAllSubFields(fieldId);
       res.json(ResponseType.success(data));
     } catch (error) {
       res.status(500).json(ResponseType.error(error.message));

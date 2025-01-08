@@ -16,10 +16,18 @@ class CourseController extends BaseController {
   initializeRoutes() {
     super.initializeRoutes();
 
-    this.router.get("/company/:companyId", this.getByCompanyId);
-    this.router.get("/:id/students", this.getEnrolledStudents);
-    this.router.post("/:id/enroll/:studentId", this.enrollStudent);
-    this.router.delete("/:id/enroll/:studentId", this.unenrollStudent);
+    this.router.get("/company/:companyId", (req, res) =>
+      this.getByCompanyId(req, res)
+    );
+    this.router.get("/:id/students", (req, res) =>
+      this.getEnrolledStudents(req, res)
+    );
+    this.router.post("/:id/enroll/:studentId", (req, res) =>
+      this.enrollStudent(req, res)
+    );
+    this.router.delete("/:id/enroll/:studentId", (req, res) =>
+      this.unenrollStudent(req, res)
+    );
   }
 
   async getByCompanyId(req, res) {
@@ -34,55 +42,40 @@ class CourseController extends BaseController {
 
   async getEnrolledStudents(req, res) {
     try {
-      const { courseId } = req.params;
-      const students = await this.service.getEnrolledStudents(courseId);
-      res.status(200).json({
-        success: true,
-        data: students,
-        message: "Enrolled students retrieved successfully",
-      });
+      const { id } = req.params;
+      const students = await this.service.findEnrolledStudents(id);
+      res.json(
+        this.responseType.success(
+          students,
+          "Enrolled students retrieved successfully"
+        )
+      );
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).json(this.responseType.error(error.message));
     }
   }
 
   async enrollStudent(req, res) {
     try {
-      const { courseId, studentId } = req.body;
-      const enrollment = await this.service.enrollStudent(courseId, studentId);
-      res.status(201).json({
-        success: true,
-        data: enrollment,
-        message: "Student enrolled successfully",
-      });
+      const { id: courseId, studentId } = req.params;
+      const data = await this.service.enrollStudent(courseId, studentId);
+      res
+        .status(201)
+        .json(this.responseType.success(data, "Student enrolled successfully"));
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).json(this.responseType.error(error.message));
     }
   }
 
   async unenrollStudent(req, res) {
     try {
-      const { courseId, studentId } = req.body;
-      const enrollment = await this.service.unenrollStudent(
-        courseId,
-        studentId
+      const { id: courseId, studentId } = req.params;
+      const data = await this.service.unenrollStudent(courseId, studentId);
+      res.json(
+        this.responseType.success(data, "Student unenrolled successfully")
       );
-      res.status(200).json({
-        success: true,
-        data: enrollment,
-        message: "Student unenrolled successfully",
-      });
     } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).json(this.responseType.error(error.message));
     }
   }
 }
