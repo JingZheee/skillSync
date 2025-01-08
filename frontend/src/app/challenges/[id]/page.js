@@ -8,338 +8,428 @@ import {
   Paper,
   Chip,
   Stack,
-  Stepper,
-  Step,
-  StepLabel,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   Card,
   CardContent,
+  Grid,
+  Link,
+  useTheme,
+  alpha,
 } from '@mui/material';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import StarIcon from '@mui/icons-material/Star';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import GroupIcon from '@mui/icons-material/Group';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useRouter } from 'next/navigation';
+import {
+  AccessTime as AccessTimeIcon,
+  Star as StarIcon,
+  CheckCircle as CheckCircleIcon,
+  ArrowBack as ArrowBackIcon,
+  Description as DescriptionIcon,
+  School as SchoolIcon,
+  Assignment as AssignmentIcon,
+  EmojiEvents as EmojiEventsIcon,
+  AttachFile as AttachFileIcon,
+} from '@mui/icons-material';
+import { useRouter, useParams } from 'next/navigation';
+import SubmitChallengeModal from '@/components/SubmitChallengeModal';
 
-const steps = ['Overview', 'Instructions', 'Submission'];
-
-export default function ChallengeDetailPage({ params }) {
+export default function ChallengePage() {
   const router = useRouter();
-  const [activeStep, setActiveStep] = useState(0);
-  
-  // Mock challenge data - Replace with API call
+  const { id } = useParams();
+  const theme = useTheme();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openSubmitModal, setOpenSubmitModal] = useState(false);
+
+  // Common styles for reuse
+  const sectionStyles = {
+    p: 3,
+    borderRadius: 2,
+    bgcolor: 'white',
+    border: '1px solid',
+    borderColor: alpha(theme.palette.primary.main, 0.1),
+  };
+
+  const headerStyles = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    mb: 3,
+    color: 'text.primary',
+    fontWeight: 'bold',
+  };
+
+  const cardStyles = {
+    p: 2,
+    bgcolor: 'white',
+    border: '1px solid',
+    borderColor: alpha(theme.palette.primary.main, 0.1),
+    borderRadius: 2,
+    '&:hover': {
+      borderColor: 'primary.main',
+      bgcolor: alpha(theme.palette.primary.main, 0.02),
+    },
+    transition: 'all 0.2s',
+  };
+
+  // Mock data - replace with actual data fetching
   const challenge = {
-    id: params.id,
     title: 'Build a REST API',
-    difficulty: 'Medium',
-    timeEstimate: '2 hours',
-    points: 100,
+    description: 'Create a RESTful API with Node.js and Express, including authentication and database integration.',
     category: 'Technology',
     subCategory: 'Web Development',
+    difficulty: 'Medium',
+    timeEstimate: '2 hours',
     skills: ['Node.js', 'Express', 'MongoDB'],
-    description: 'Create a RESTful API with Node.js and Express, including authentication and database integration.',
-    completedBy: 156,
     objectives: [
-      'Implement user authentication and authorization',
-      'Create CRUD endpoints for resource management',
-      'Integrate with MongoDB database',
-      'Implement error handling and validation',
-      'Add API documentation'
-    ],
-    requirements: [
-      'Basic knowledge of JavaScript',
-      'Understanding of HTTP protocols',
-      'Familiarity with REST principles'
-    ],
-    resources: [
-      {
-        title: 'Node.js Documentation',
-        url: 'https://nodejs.org/docs'
-      },
-      {
-        title: 'Express.js Guide',
-        url: 'https://expressjs.com/guide'
-      }
+      'Understand RESTful API principles',
+      'Implement authentication middleware',
+      'Create database models and controllers'
     ],
     instructions: [
-      'Set up a new Node.js project',
-      'Install required dependencies',
-      'Create server configuration',
-      'Implement authentication middleware',
-      'Create API routes and controllers',
-      'Add database integration',
-      'Test all endpoints',
-      'Document your API'
+      'Set up a Node.js project with Express',
+      'Implement user authentication',
+      'Create CRUD endpoints'
+    ],
+    resources: [
+      { title: 'Express Documentation', url: 'https://expressjs.com' },
+      { title: 'MongoDB Atlas', url: 'https://www.mongodb.com/cloud/atlas' }
+    ],
+    files: [
+      { name: 'project-structure.pdf', size: 524288 },
+      { name: 'api-specs.docx', size: 1048576 }
     ],
     submissionGuidelines: [
-      'Code should be well-documented',
+      'Submit GitHub repository link',
       'Include README with setup instructions',
-      'All tests should pass',
-      'API documentation must be complete'
+      'Deploy to a cloud platform'
     ],
     evaluationCriteria: [
       'Code quality and organization',
-      'Proper error handling',
-      'Security implementation',
-      'Documentation quality',
-      'Test coverage'
+      'API documentation',
+      'Error handling',
+      'Security implementation'
     ]
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy': return 'success';
-      case 'medium': return 'warning';
-      case 'hard': return 'error';
-      default: return 'default';
+  const handleSubmitChallenge = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const response = await fetch(`/api/challenges/${id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          challengeId: id,
+          // Add any other submission data you need
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Submission failed');
+      }
+
+      // Redirect to success page or show success message
+      router.push(`/challenges/${id}/submitted`);
+      
+    } catch (error) {
+      console.error('Error submitting challenge:', error);
+      // Handle error (show error message to user)
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleStart = () => {
-    router.push(`/challenges/${params.id}/workspace`);
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack spacing={4}>
-        {/* Navigation */}
+    <Box sx={{ 
+      minHeight: '100vh',
+      bgcolor: 'grey.50',
+      py: 4,
+    }}>
+      <Container maxWidth="lg">
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => router.back()}
-          sx={{ alignSelf: 'flex-start' }}
+          sx={{ 
+            mb: 4,
+            ...cardStyles,
+          }}
         >
           Back to Challenges
         </Button>
 
-        {/* Header */}
-        <Paper sx={{ p: 3 }}>
-          <Stack spacing={2}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip 
-                label={challenge.difficulty} 
-                color={getDifficultyColor(challenge.difficulty)}
-                size="small"
-              />
-              <Chip 
-                label={challenge.subCategory}
-                variant="outlined"
-                size="small"
-              />
-            </Box>
+        <Grid container spacing={3}>
+          {/* Main Content */}
+          <Grid item xs={12} md={8}>
+            <Stack spacing={3}>
+              {/* Challenge Header */}
+              <Paper 
+                elevation={0}
+                sx={{ 
+                  p: 4,
+                  borderRadius: 2,
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                }}
+              >
+                <Typography variant="h3" gutterBottom fontWeight="bold">
+                  {challenge.title}
+                </Typography>
+                <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
+                  {challenge.description}
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  <Chip 
+                    label={challenge.category} 
+                    sx={{ 
+                      bgcolor: alpha('#fff', 0.2),
+                      color: 'inherit',
+                      '& .MuiChip-label': { fontWeight: 'bold' }
+                    }} 
+                  />
+                  <Chip 
+                    label={challenge.subCategory} 
+                    sx={{ 
+                      bgcolor: alpha('#fff', 0.1),
+                      color: 'inherit'
+                    }} 
+                  />
+                </Stack>
+              </Paper>
 
-            <Typography variant="h4">
-              {challenge.title}
-            </Typography>
-
-            <Typography variant="body1" color="text.secondary">
-              {challenge.description}
-            </Typography>
-
-            <Stack direction="row" spacing={3} alignItems="center">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <AccessTimeIcon color="action" />
-                <Typography>{challenge.timeEstimate}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <StarIcon color="action" />
-                <Typography>{challenge.points} points</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <GroupIcon color="action" />
-                <Typography>{challenge.completedBy} completed</Typography>
-              </Box>
-            </Stack>
-
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {challenge.skills.map((skill) => (
-                <Chip 
-                  key={skill}
-                  label={skill}
-                  size="small"
-                  variant="outlined"
-                />
-              ))}
-            </Box>
-          </Stack>
-        </Paper>
-
-        {/* Content */}
-        <Box>
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-
-          <Stack spacing={4}>
-            {activeStep === 0 && (
-              <>
-                {/* Objectives */}
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Learning Objectives
-                    </Typography>
-                    <List>
-                      {challenge.objectives.map((objective, index) => (
-                        <ListItem key={index}>
-                          <ListItemIcon>
-                            <CheckCircleIcon color="primary" />
-                          </ListItemIcon>
-                          <ListItemText primary={objective} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </CardContent>
-                </Card>
-
-                {/* Requirements */}
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Prerequisites
-                    </Typography>
-                    <List>
-                      {challenge.requirements.map((req, index) => (
-                        <ListItem key={index}>
-                          <ListItemIcon>
-                            <CheckCircleIcon color="primary" />
-                          </ListItemIcon>
-                          <ListItemText primary={req} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </CardContent>
-                </Card>
-
-                {/* Resources */}
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Helpful Resources
-                    </Typography>
-                    <List>
-                      {challenge.resources.map((resource, index) => (
-                        <ListItem key={index}>
-                          <ListItemText 
-                            primary={
-                              <a 
-                                href={resource.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                style={{ color: 'inherit', textDecoration: 'none' }}
-                              >
-                                {resource.title}
-                              </a>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-
-            {activeStep === 1 && (
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Step-by-Step Instructions
-                  </Typography>
-                  <List>
-                    {challenge.instructions.map((instruction, index) => (
-                      <ListItem key={index}>
-                        <ListItemIcon>
+              {/* Instructions */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Typography variant="h5" sx={headerStyles}>
+                  <AssignmentIcon color="primary" /> Instructions
+                </Typography>
+                <List sx={{ p: 0 }}>
+                  {challenge.instructions.map((instruction, index) => (
+                    <ListItem 
+                      key={index}
+                      sx={{
+                        bgcolor: index % 2 === 0 ? alpha(theme.palette.primary.main, 0.03) : 'transparent',
+                        borderRadius: 2,
+                        mb: 1,
+                        p: 2,
+                      }}
+                    >
+                      <ListItemIcon>
+                        <Typography variant="h6" color="primary" fontWeight="bold">
                           {index + 1}.
-                        </ListItemIcon>
-                        <ListItemText primary={instruction} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
-              </Card>
-            )}
+                        </Typography>
+                      </ListItemIcon>
+                      <ListItemText primary={instruction} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
 
-            {activeStep === 2 && (
-              <>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Submission Guidelines
-                    </Typography>
-                    <List>
-                      {challenge.submissionGuidelines.map((guideline, index) => (
-                        <ListItem key={index}>
-                          <ListItemIcon>
+              {/* Learning Objectives */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Typography variant="h5" sx={headerStyles}>
+                  <SchoolIcon color="primary" /> Learning Objectives
+                </Typography>
+                <Grid container spacing={2}>
+                  {challenge.objectives.map((objective, index) => (
+                    <Grid item xs={12} sm={6} key={index}>
+                      <Card elevation={0} sx={cardStyles}>
+                        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                          <Box sx={{ display: 'flex', gap: 2 }}>
                             <CheckCircleIcon color="primary" />
-                          </ListItemIcon>
-                          <ListItemText primary={guideline} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </CardContent>
-                </Card>
+                            <Typography>{objective}</Typography>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Paper>
 
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Evaluation Criteria
+              {/* Resources */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Typography variant="h5" sx={headerStyles}>
+                  <DescriptionIcon color="primary" /> Resources
+                </Typography>
+                <Grid container spacing={2}>
+                  {challenge.resources.map((resource, index) => (
+                    <Grid item xs={12} sm={6} key={index}>
+                      <Link href={resource.url} target="_blank" rel="noopener" underline="none">
+                        <Card elevation={0} sx={cardStyles}>
+                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                            <Typography variant="subtitle1">{resource.title}</Typography>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Paper>
+
+              {/* Submission & Evaluation */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Grid container spacing={4}>
+                  {/* Submission Guidelines */}
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h5" sx={headerStyles}>
+                      <AssignmentIcon color="primary" /> Submission Guidelines
                     </Typography>
-                    <List>
-                      {challenge.evaluationCriteria.map((criteria, index) => (
-                        <ListItem key={index}>
-                          <ListItemIcon>
-                            <EmojiEventsIcon color="primary" />
-                          </ListItemIcon>
-                          <ListItemText primary={criteria} />
-                        </ListItem>
+                    <Stack spacing={2}>
+                      {challenge.submissionGuidelines.map((guideline, index) => (
+                        <Card key={index} elevation={0} sx={cardStyles}>
+                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                              <CheckCircleIcon color="primary" sx={{ mt: 0.5 }} />
+                              <Typography>{guideline}</Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
                       ))}
-                    </List>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </Stack>
-        </Box>
+                    </Stack>
+                  </Grid>
 
-        {/* Navigation Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            disabled={activeStep === 0}
-            onClick={() => setActiveStep((prev) => prev - 1)}
-          >
-            Previous
-          </Button>
-          <Box>
-            {activeStep === steps.length - 1 ? (
-              <Button
-                variant="contained"
-                startIcon={<PlayArrowIcon />}
-                onClick={handleStart}
-              >
-                Start Challenge
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={() => setActiveStep((prev) => prev + 1)}
-              >
-                Next
-              </Button>
-            )}
-          </Box>
-        </Box>
-      </Stack>
-    </Container>
+                  {/* Evaluation Criteria */}
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h5" sx={headerStyles}>
+                      <EmojiEventsIcon color="primary" /> Evaluation Criteria
+                    </Typography>
+                    <Stack spacing={2}>
+                      {challenge.evaluationCriteria.map((criteria, index) => (
+                        <Card key={index} elevation={0} sx={cardStyles}>
+                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                              <StarIcon color="primary" sx={{ mt: 0.5 }} />
+                              <Typography>{criteria}</Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </Stack>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Stack>
+          </Grid>
+
+          {/* Sidebar */}
+          <Grid item xs={12} md={4}>
+            <Stack spacing={3} sx={{ position: 'sticky', top: 24 }}>
+              {/* Challenge Info */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Difficulty
+                    </Typography>
+                    <Chip 
+                      label={challenge.difficulty}
+                      color={
+                        challenge.difficulty === 'Easy' ? 'success' :
+                        challenge.difficulty === 'Medium' ? 'warning' : 'error'
+                      }
+                      sx={{ fontWeight: 'bold' }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Estimated Time
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AccessTimeIcon color="action" />
+                      <Typography>{challenge.timeEstimate}</Typography>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      Required Skills
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {challenge.skills.map((skill, index) => (
+                        <Chip 
+                          key={index} 
+                          label={skill} 
+                          size="small"
+                          sx={{ 
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: 'primary.main',
+                            fontWeight: 'medium',
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </Stack>
+              </Paper>
+
+              {/* Files */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Typography variant="h6" sx={headerStyles}>
+                  <AttachFileIcon /> Challenge Files
+                </Typography>
+                <List disablePadding>
+                  {challenge.files.map((file, index) => (
+                    <ListItem 
+                      key={index}
+                      sx={{
+                        px: 0,
+                        borderBottom: index !== challenge.files.length - 1 ? 1 : 0,
+                        borderColor: 'grey.200',
+                      }}
+                    >
+                      <ListItemIcon>
+                        <AttachFileIcon color="action" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={file.name}
+                        secondary={`${(file.size / 1024 / 1024).toFixed(2)} MB`}
+                      />
+                      <Button 
+                        variant="outlined" 
+                        size="small"
+                        sx={{ 
+                          borderRadius: 2,
+                          minWidth: 100,
+                        }}
+                      >
+                        Download
+                      </Button>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+
+              {/* Submit Section */}
+              <Paper elevation={0} sx={sectionStyles}>
+                <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+                  Make sure you've reviewed all requirements
+                </Typography>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={() => setOpenSubmitModal(true)}
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 2,
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Submit Challenge
+                </Button>
+              </Paper>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Container>
+
+      {/* Submission Modal */}
+      <SubmitChallengeModal
+        open={openSubmitModal}
+        onClose={() => setOpenSubmitModal(false)}
+        challengeId={id}
+        submissionGuidelines={challenge.submissionGuidelines}
+      />
+    </Box>
   );
 } 
