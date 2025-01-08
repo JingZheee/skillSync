@@ -385,7 +385,7 @@ useEffect(() => {
                 <Box>
                   <Box display="flex" alignItems="center">
                     <PieChartIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Skill Distribution</Typography>
+                    <Typography variant="h6">Skill Popularity</Typography>
                   </Box>
                   <Typography 
                     variant="subtitle2" 
@@ -396,7 +396,7 @@ useEffect(() => {
                       fontStyle: 'italic'
                     }}
                   >
-                    Distribution of Skills for selected subcategory
+                    Popularity of Skills for selected subcategory
                   </Typography>
                 </Box>
                 <FormControl size="small" sx={{ minWidth: 150 }}>
