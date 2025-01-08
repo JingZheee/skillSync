@@ -14,10 +14,16 @@ class CompanyController extends BaseController {
 
   initializeRoutes() {
     super.initializeRoutes();
-    
-    this.router.get("/:id/challenges", this.getCompanyChallenges);
-    this.router.get("/:id/hackathons", this.getCompanyHackathons);
-    this.router.get("/:id/courses", this.getCompanyCourses);
+
+    this.router.get("/:id/challenges", (req, res) =>
+      this.getCompanyChallenges(req, res)
+    );
+    this.router.get("/:id/hackathons", (req, res) =>
+      this.getCompanyHackathons(req, res)
+    );
+    this.router.get("/:id/courses", (req, res) =>
+      this.getCompanyCourses(req, res)
+    );
   }
 
   async getCompanyChallenges(req, res) {

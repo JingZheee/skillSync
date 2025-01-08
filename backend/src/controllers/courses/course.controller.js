@@ -16,10 +16,18 @@ class CourseController extends BaseController {
   initializeRoutes() {
     super.initializeRoutes();
 
-    this.router.get("/company/:companyId", this.getByCompanyId);
-    this.router.get("/:id/students", this.getEnrolledStudents);
-    this.router.post("/:id/enroll/:studentId", this.enrollStudent);
-    this.router.delete("/:id/enroll/:studentId", this.unenrollStudent);
+    this.router.get("/company/:companyId", (req, res) =>
+      this.getByCompanyId(req, res)
+    );
+    this.router.get("/:id/students", (req, res) =>
+      this.getEnrolledStudents(req, res)
+    );
+    this.router.post("/:id/enroll/:studentId", (req, res) =>
+      this.enrollStudent(req, res)
+    );
+    this.router.delete("/:id/enroll/:studentId", (req, res) =>
+      this.unenrollStudent(req, res)
+    );
   }
 
   async getByCompanyId(req, res) {

@@ -14,8 +14,8 @@ class StudentController extends BaseController {
   initializeRoutes() {
     super.initializeRoutes();
 
-    this.router.get("/field/:fieldId", this.getByField);
-    this.router.get("/rank/:rankId", this.getByRank);
+    this.router.get("/field/:fieldId", (req, res) => this.getByField(req, res));
+    this.router.get("/rank/:rankId", (req, res) => this.getByRank(req, res));
   }
 
   async getByField(req, res) {

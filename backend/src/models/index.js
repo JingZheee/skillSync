@@ -14,6 +14,12 @@ const CompanyTag = require("./companyTag");
 const ChallengeTag = require("./challengeTag");
 const HackathonTag = require("./hackathonTag");
 const CourseTag = require("./courseTag");
+const StudentField = require("./studentField");
+const CompanyField = require("./companyField");
+const HackathonField = require("./hackathonField");
+const CourseField = require("./courseField");
+const SubField = require("./subField");
+const ChallengeField = require("./challengeField");
 
 module.exports = {
   Ranking,
@@ -32,4 +38,10 @@ module.exports = {
   ChallengeTag,
   HackathonTag,
   CourseTag,
+  StudentField,
+  CompanyField,
+  HackathonField,
+  CourseField,
+  ChallengeField,
+  SubField,
 };

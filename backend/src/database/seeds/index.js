@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const connectDB = require("../../config/database");
 const seedFields = require("./fieldSeeder");
 const seedTags = require("./tagSeeder");
+const seedChallenges = require("./challengeSeeder");
 async function seedDatabase() {
   try {
     // Connect to database
@@ -15,6 +16,7 @@ async function seedDatabase() {
     // Run seeders
     await seedFields();
     await seedTags();
+    await seedChallenges();
     console.log("✅ All seeds completed successfully");
 
     // Close connection if not in production

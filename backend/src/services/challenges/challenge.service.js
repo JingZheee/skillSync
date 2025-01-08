@@ -61,14 +61,92 @@ class ChallengeService extends BaseService {
   }
 
   async findAll(filter = {}, options = {}) {
-    return await super.findAll(filter, {
-      ...options,
-      populate: ["company", "hackathon", "tags"],
+    // Get total count for pagination
+    const total = await this.model.countDocuments({
+      ...filter,
+      deleted_at: null,
     });
+
+    const challenges = await super.findAll(filter, {
+      ...options,
+      populate: [
+        { path: "company" },
+        { path: "hackathon" },
+        {
+          path: "tags",
+          populate: {
+            path: "tag",
+            model: "Tag",
+          },
+        },
+      ],
+    });
+
+    // Ensure challenges is an array
+    const challengesArray = Array.isArray(challenges) ? challenges : [];
+
+    // Fetch related fields and subfields for each challenge
+    const populatedChallenges = await Promise.all(
+      challengesArray.map(async (challenge) => {
+        const challengeFields = await this.model
+          .model("ChallengeField")
+          .find({
+            challenge: challenge._id,
+            deleted_at: null,
+          })
+          .populate([{ path: "field" }, { path: "subFields" }]);
+
+        return {
+          ...challenge.toObject(),
+          fields: challengeFields,
+        };
+      })
+    );
+
+    // Calculate proper pagination data
+    const limit = parseInt(options.limit) || 10;
+    const totalPages = Math.ceil(total / limit);
+    const page = parseInt(options.page) || 1;
+
+    return {
+      data: populatedChallenges,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        total,
+      },
+    };
   }
 
   async findById(id) {
-    return await super.findById(id, ["company", "hackathon", "tags"]);
+    const challenge = await super.findById(id, [
+      { path: "company" },
+      { path: "hackathon" },
+      {
+        path: "tags",
+        populate: {
+          path: "tag",
+          model: "Tag",
+        },
+      },
+    ]);
+
+    if (!challenge) return null;
+
+    // Fetch related fields and subfields
+    const challengeFields = await this.model
+      .model("ChallengeField")
+      .find({
+        challenge: challenge._id,
+        deleted_at: null,
+      })
+      .populate([{ path: "field" }, { path: "subFields" }]);
+
+    return {
+      ...challenge.toObject(),
+      fields: challengeFields,
+    };
   }
 
   async create(data) {

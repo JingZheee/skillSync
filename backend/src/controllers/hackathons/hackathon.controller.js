@@ -16,12 +16,22 @@ class HackathonController extends BaseController {
 
   initializeRoutes() {
     super.initializeRoutes();
-    
-    this.router.get("/company/:companyId", this.getByCompanyId);
-    this.router.get("/:id/participants", this.getParticipants);
-    this.router.post("/:id/register/:studentId", this.registerStudent);
-    this.router.delete("/:id/register/:studentId", this.unregisterStudent);
-    this.router.get("/:id/challenges", this.getChallenges);
+
+    this.router.get("/company/:companyId", (req, res) =>
+      this.getByCompanyId(req, res)
+    );
+    this.router.get("/:id/participants", (req, res) =>
+      this.getParticipants(req, res)
+    );
+    this.router.post("/:id/register/:studentId", (req, res) =>
+      this.registerStudent(req, res)
+    );
+    this.router.delete("/:id/register/:studentId", (req, res) =>
+      this.unregisterStudent(req, res)
+    );
+    this.router.get("/:id/challenges", (req, res) =>
+      this.getChallenges(req, res)
+    );
   }
 
   async getByCompanyId(req, res) {
