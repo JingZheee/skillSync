@@ -40,7 +40,7 @@ export default function Register() {
             SkillSync
           </Typography>
           <Typography variant="body1" color="textSecondary" textAlign="center" gutterBottom>
-            Create your account to get started
+          Login your account to get started
           </Typography>
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>                   
@@ -67,7 +67,7 @@ export default function Register() {
                 onChange={handleChange}
               />
               <Button type="submit" variant="contained" color="primary" fullWidth>
-                Create Account   
+                Sign in  
               </Button>
             </Stack>
           </form>
@@ -75,7 +75,7 @@ export default function Register() {
             Don&apos;t have an account?{' '}
             <Link href="/auth/register" passHref>
               <Button variant="text" color="secondary">
-                Sign In
+                Create Account
               </Button>
             </Link>
           </Typography>

@@ -17,7 +17,7 @@ export default function Register() {
     name: '',
     phone: '',
     email: '',
-    university: '',
+    company: '',
     password: '',
   });
 
@@ -63,7 +63,7 @@ export default function Register() {
             SkillSync
           </Typography>
           <Typography variant="body1" color="textSecondary" textAlign="center" gutterBottom>
-            Register your account to get started
+            Login your account to get started
           </Typography>
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>
@@ -100,22 +100,15 @@ export default function Register() {
                 onChange={handleChange}
               />
               <TextField
-                id="university"
-                name="university"
-                select
-                label="University"
+                id="company"
+                name="company"
+                label="Company Name"
                 variant="outlined"
                 required
                 fullWidth
-                value={formData.university}
+                value={formData.company}
                 onChange={handleChange}
-              >
-                {universities.map((university) => (
-      <MenuItem key={university} value={university}>
-        {university}
-      </MenuItem>
-    ))}
-  </TextField>
+              />
               <TextField
                 id="password"
                 name="password"
@@ -128,11 +121,10 @@ export default function Register() {
                 onChange={handleChange}
               />
               <Link href="/auth/surveyForm" passHref>
-              <Button type="submit" variant="contained" color="primary" fullWidth>
-                Create Account
-              </Button>
+                <Button type="submit" variant="contained" color="primary" fullWidth>
+                  Create Account
+                </Button>
               </Link>
-              
             </Stack>
           </form>
           <Typography variant="body2" textAlign="center" mt={2}>
