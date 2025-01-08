@@ -58,6 +58,10 @@ async function createApp(options = {}) {
     app.use(`/api/${controller.getPath()}`, controller.getRouter());
   });
 
+  app.get("/api/test", (req, res) => {
+    res.send("Hello World");
+  });
+
   return app;
 }
 

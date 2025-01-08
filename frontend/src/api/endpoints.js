@@ -1,4 +1,5 @@
 export const API = {
+  test: "/test",
   tags: {
     findAll: "/tags",
     findById: "/tags/:id",
