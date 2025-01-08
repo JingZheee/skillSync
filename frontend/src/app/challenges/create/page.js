@@ -4,363 +4,673 @@ import {
   Container,
   Paper,
   Typography,
-  TextField,
   Box,
+  Stepper,
+  Step,
+  StepLabel,
   Button,
-  Stack,
+  TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Stack,
   Chip,
-  OutlinedInput,
   Autocomplete,
   InputAdornment,
+  Alert,
+  List,
+  ListItem,
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import StarIcon from '@mui/icons-material/Star';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useRouter } from 'next/navigation';
+import FileUpload from '@/components/FileUpload';
 
-const categories = {
-  mainCategories: ['Technology', 'Business', 'Finance', 'Design', 'Marketing'],
-  fields: ['Software Engineering', 'Business Analytics', 'Financial Technology', 'UX Design', 'Digital Marketing'],
-  careerPaths: ['Software Developer', 'Business Analyst', 'Financial Analyst', 'UX Designer', 'Marketing Specialist'],
-  difficulties: ['Easy', 'Medium', 'Hard']
-};
-
-const suggestedTags = [
-  // Technology
-  'javascript', 'python', 'react', 'api', 'database', 'cloud', 'security',
-  // Business
-  'strategy', 'analysis', 'management', 'operations', 'entrepreneurship',
-  // Finance
-  'investment', 'trading', 'blockchain', 'cryptocurrency', 'risk-management',
-  // Design
-  'ui-design', 'user-research', 'wireframing', 'prototyping',
-  // Marketing
-  'social-media', 'content-strategy', 'seo', 'analytics'
+const steps = [
+  'Basic Information',
+  'Challenge Details',
+  'Instructions & Resources',
+  'Evaluation Criteria',
+  'Review'
 ];
 
+const categoryConfig = {
+  Technology: {
+    subCategories: ['Web Development', 'Mobile Development', 'Cloud Computing', 'Data Science', 'Cybersecurity'],
+    skills: ['JavaScript', 'Python', 'React', 'Node.js', 'AWS', 'Machine Learning'],
+  },
+  Business: {
+    subCategories: ['Strategy', 'Operations', 'Management', 'Entrepreneurship'],
+    skills: ['Business Analysis', 'Project Management', 'Strategic Planning', 'Leadership'],
+  },
+  Finance: {
+    subCategories: ['Investment', 'FinTech', 'Risk Management', 'Trading'],
+    skills: ['Financial Analysis', 'Risk Assessment', 'Blockchain', 'Trading Strategies'],
+  },
+  Design: {
+    subCategories: ['UI/UX', 'Graphic Design', 'Product Design', 'Brand Design'],
+    skills: ['UI Design', 'User Research', 'Wireframing', 'Prototyping'],
+  },
+  Marketing: {
+    subCategories: ['Digital Marketing', 'Content Marketing', 'Social Media', 'SEO'],
+    skills: ['Social Media Marketing', 'Content Strategy', 'Analytics', 'SEO Optimization'],
+  }
+};
+
 export default function CreateChallengePage() {
+  const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    mainCategory: '',
-    field: '',
-    careerPaths: [],
+    category: '',
+    subCategory: '',
     difficulty: '',
     timeEstimate: '',
-    points: '',
-    tags: [],
-    instructions: '',
-    evaluation: '',
-    resources: '',
-    prerequisites: '',
+    skills: [],
+    objectives: [''],
+    instructions: [''],
+    resources: [{ title: '', url: '' }],
+    submissionGuidelines: [''],
+    evaluationCriteria: [''],
+    files: [],
   });
 
-  const [errors, setErrors] = useState({});
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when field is edited
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateForm = () => {
+  const validateStep = (step) => {
     const newErrors = {};
-    
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.mainCategory) newErrors.mainCategory = 'Category is required';
-    if (!formData.field) newErrors.field = 'Field is required';
-    if (formData.careerPaths.length === 0) newErrors.careerPaths = 'At least one career path is required';
-    if (!formData.difficulty) newErrors.difficulty = 'Difficulty level is required';
-    if (!formData.timeEstimate) newErrors.timeEstimate = 'Time estimate is required';
-    if (!formData.points) newErrors.points = 'Points value is required';
-    if (!formData.instructions.trim()) newErrors.instructions = 'Instructions are required';
-    if (!formData.evaluation.trim()) newErrors.evaluation = 'Evaluation criteria is required';
+
+    switch (step) {
+      case 0:
+        if (!formData.title.trim()) newErrors.title = 'Title is required';
+        if (!formData.description.trim()) newErrors.description = 'Description is required';
+        if (!formData.category) newErrors.category = 'Category is required';
+        if (!formData.subCategory) newErrors.subCategory = 'Sub-category is required';
+        break;
+
+      case 1:
+        if (!formData.difficulty) newErrors.difficulty = 'Difficulty is required';
+        if (!formData.timeEstimate.trim()) newErrors.timeEstimate = 'Time estimate is required';
+        if (formData.skills.length === 0) newErrors.skills = 'At least one skill is required';
+        break;
+
+      case 2:
+        if (formData.objectives.some(obj => !obj.trim())) {
+          newErrors.objectives = 'All objectives must be filled';
+        }
+        if (formData.instructions.some(inst => !inst.trim())) {
+          newErrors.instructions = 'All instructions must be filled';
+        }
+        break;
+
+      case 3:
+        if (formData.submissionGuidelines.some(guide => !guide.trim())) {
+          newErrors.submissionGuidelines = 'All submission guidelines must be filled';
+        }
+        if (formData.evaluationCriteria.some(criteria => !criteria.trim())) {
+          newErrors.evaluationCriteria = 'All evaluation criteria must be filled';
+        }
+        break;
+
+      default:
+        break;
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setActiveStep((prevStep) => prevStep + 1);
     }
+  };
 
-    try {
-      // Here you would typically make an API call to create the challenge
-      console.log('Submitting challenge:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Handle success (redirect or show success message)
-      alert('Challenge created successfully!');
-    } catch (error) {
-      console.error('Error creating challenge:', error);
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleSubmit = async () => {
+    if (validateStep(activeStep)) {
+      try {
+        // Log the final form data
+        console.log('Submitting challenge:', {
+          ...formData,
+          files: formData.files.map(file => ({
+            name: file.name,
+            size: file.size,
+            type: file.type
+          }))
+        });
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Redirect to challenges page
+        router.push('/challenges');
+      } catch (error) {
+        console.error('Error creating challenge:', error);
+      }
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleArrayChange = (field, index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const addArrayItem = (field, defaultValue) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...prev[field], defaultValue]
+    }));
+  };
+
+  const removeArrayItem = (field, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }));
+  };
+
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        return (
+          <Stack spacing={3}>
+            <TextField
+              label="Challenge Title"
+              value={formData.title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              fullWidth
+              required
+            />
+            
+            <TextField
+              label="Description"
+              value={formData.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              multiline
+              rows={4}
+              fullWidth
+              required
+            />
+
+            <FormControl fullWidth required>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={formData.category}
+                label="Category"
+                onChange={(e) => {
+                  handleChange('category', e.target.value);
+                  handleChange('subCategory', '');
+                  handleChange('skills', []);
+                }}
+              >
+                {Object.keys(categoryConfig).map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {formData.category && (
+              <FormControl fullWidth required>
+                <InputLabel>Sub-Category</InputLabel>
+                <Select
+                  value={formData.subCategory}
+                  label="Sub-Category"
+                  onChange={(e) => handleChange('subCategory', e.target.value)}
+                >
+                  {categoryConfig[formData.category].subCategories.map((subCategory) => (
+                    <MenuItem key={subCategory} value={subCategory}>
+                      {subCategory}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Stack>
+        );
+
+      case 1:
+        return (
+          <Stack spacing={3}>
+            <FormControl fullWidth required>
+              <InputLabel>Difficulty</InputLabel>
+              <Select
+                value={formData.difficulty}
+                label="Difficulty"
+                onChange={(e) => handleChange('difficulty', e.target.value)}
+              >
+                {['Easy', 'Medium', 'Hard'].map((level) => (
+                  <MenuItem key={level} value={level}>
+                    {level}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="Time Estimate"
+              value={formData.timeEstimate}
+              onChange={(e) => handleChange('timeEstimate', e.target.value)}
+              fullWidth
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccessTimeIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {formData.category && (
+              <Autocomplete
+                multiple
+                options={categoryConfig[formData.category].skills}
+                value={formData.skills}
+                onChange={(_, newValue) => handleChange('skills', newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Required Skills"
+                    required
+                  />
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => {
+                    const tagProps = getTagProps({ index });
+                    const { key, ...chipProps } = tagProps;
+                    return (
+                      <Chip
+                        key={key}
+                        label={option}
+                        {...chipProps}
+                      />
+                    );
+                  })
+                }
+              />
+            )}
+          </Stack>
+        );
+
+      case 2:
+        return (
+          <Stack spacing={3}>
+            {/* Learning Objectives */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Learning Objectives
+              </Typography>
+              {formData.objectives.map((objective, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    value={objective}
+                    onChange={(e) => handleArrayChange('objectives', index, e.target.value)}
+                    fullWidth
+                    required
+                  />
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    onClick={() => removeArrayItem('objectives', index)}
+                    disabled={formData.objectives.length === 1}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button onClick={() => addArrayItem('objectives', '')}>
+                Add Objective
+              </Button>
+            </Box>
+
+            {/* Challenge Files */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Challenge Files
+              </Typography>
+              <FileUpload
+                title="Upload Challenge Files"
+                description="Upload any necessary files for the challenge (max 5 files, 5MB each)"
+                acceptedFileTypes=".pdf,.doc,.docx,.txt,.zip,.rar"
+                maxFiles={5}
+                maxFileSize={5}
+                files={formData.files}
+                onFilesChange={(files) => handleChange('files', files)}
+              />
+            </Box>
+
+            {/* Instructions */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Step-by-Step Instructions
+              </Typography>
+              {formData.instructions.map((instruction, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    value={instruction}
+                    onChange={(e) => handleArrayChange('instructions', index, e.target.value)}
+                    fullWidth
+                    required
+                  />
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    onClick={() => removeArrayItem('instructions', index)}
+                    disabled={formData.instructions.length === 1}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button onClick={() => addArrayItem('instructions', '')}>
+                Add Instruction
+              </Button>
+            </Box>
+
+            {/* Resources */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Additional Resources
+              </Typography>
+              {formData.resources.map((resource, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    label="Title"
+                    value={resource.title}
+                    onChange={(e) => handleArrayChange('resources', index, { ...resource, title: e.target.value })}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="URL"
+                    value={resource.url}
+                    onChange={(e) => handleArrayChange('resources', index, { ...resource, url: e.target.value })}
+                    sx={{ flex: 2 }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    onClick={() => removeArrayItem('resources', index)}
+                    disabled={formData.resources.length === 1}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button onClick={() => addArrayItem('resources', { title: '', url: '' })}>
+                Add Resource
+              </Button>
+            </Box>
+          </Stack>
+        );
+
+      case 3:
+        return (
+          <Stack spacing={3}>
+            {/* Submission Guidelines */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Submission Guidelines
+              </Typography>
+              {formData.submissionGuidelines.map((guideline, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    value={guideline}
+                    onChange={(e) => handleArrayChange('submissionGuidelines', index, e.target.value)}
+                    fullWidth
+                    required
+                  />
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    onClick={() => removeArrayItem('submissionGuidelines', index)}
+                    disabled={formData.submissionGuidelines.length === 1}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button onClick={() => addArrayItem('submissionGuidelines', '')}>
+                Add Guideline
+              </Button>
+            </Box>
+
+            {/* Evaluation Criteria */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Evaluation Criteria
+              </Typography>
+              {formData.evaluationCriteria.map((criteria, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    value={criteria}
+                    onChange={(e) => handleArrayChange('evaluationCriteria', index, e.target.value)}
+                    fullWidth
+                    required
+                  />
+                  <Button 
+                    variant="outlined" 
+                    color="error"
+                    onClick={() => removeArrayItem('evaluationCriteria', index)}
+                    disabled={formData.evaluationCriteria.length === 1}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button onClick={() => addArrayItem('evaluationCriteria', '')}>
+                Add Criteria
+              </Button>
+            </Box>
+          </Stack>
+        );
+
+      case 4:
+        return (
+          <Stack spacing={3}>
+            <Typography variant="h6" gutterBottom>
+              Review your challenge
+            </Typography>
+
+            {/* Basic Information */}
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                Basic Information
+              </Typography>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Title</Typography>
+                  <Typography>{formData.title}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Description</Typography>
+                  <Typography>{formData.description}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Category</Typography>
+                  <Typography>{formData.category} → {formData.subCategory}</Typography>
+                </Box>
+              </Stack>
+            </Paper>
+
+            {/* Challenge Details */}
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                Challenge Details
+              </Typography>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Difficulty</Typography>
+                  <Typography>{formData.difficulty}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Time Estimate</Typography>
+                  <Typography>{formData.timeEstimate}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Required Skills</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    {formData.skills.map((skill, index) => (
+                      <Chip key={index} label={skill} size="small" />
+                    ))}
+                  </Box>
+                </Box>
+              </Stack>
+            </Paper>
+
+            {/* Instructions & Resources */}
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                Instructions & Resources
+              </Typography>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Learning Objectives</Typography>
+                  <List dense>
+                    {formData.objectives.map((objective, index) => (
+                      <ListItem key={index}>
+                        <Typography>• {objective}</Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Instructions</Typography>
+                  <List dense>
+                    {formData.instructions.map((instruction, index) => (
+                      <ListItem key={index}>
+                        <Typography>• {instruction}</Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Resources</Typography>
+                  <List dense>
+                    {formData.resources.map((resource, index) => (
+                      <ListItem key={index}>
+                        <Typography>
+                          • {resource.title}: <a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.url}</a>
+                        </Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Uploaded Files</Typography>
+                  <List dense>
+                    {formData.files.map((file, index) => (
+                      <ListItem key={index}>
+                        <Typography>• {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </Stack>
+            </Paper>
+
+            {/* Evaluation */}
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                Evaluation
+              </Typography>
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Submission Guidelines</Typography>
+                  <List dense>
+                    {formData.submissionGuidelines.map((guideline, index) => (
+                      <ListItem key={index}>
+                        <Typography>• {guideline}</Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Evaluation Criteria</Typography>
+                  <List dense>
+                    {formData.evaluationCriteria.map((criteria, index) => (
+                      <ListItem key={index}>
+                        <Typography>• {criteria}</Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </Stack>
+            </Paper>
+          </Stack>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => router.back()}
+        sx={{ mb: 4 }}
+      >
+        Back
+      </Button>
+
       <Paper sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom align="center">
           Create New Challenge
         </Typography>
-        
-        <form onSubmit={handleSubmit}>
-          <Stack spacing={3}>
-            {/* Basic Information */}
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Basic Information
-              </Typography>
-              <Stack spacing={2}>
-                <TextField
-                  label="Challenge Title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  error={!!errors.title}
-                  helperText={errors.title || 'Enter a clear, descriptive title'}
-                  fullWidth
-                  required
-                />
 
-                <TextField
-                  label="Description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  error={!!errors.description}
-                  helperText={errors.description || 'Provide a brief overview of the challenge'}
-                  multiline
-                  rows={3}
-                  fullWidth
-                  required
-                />
-              </Stack>
-            </Box>
+        <Stepper activeStep={activeStep} sx={{ my: 4 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
 
-            {/* Category and Field */}
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Classification
-              </Typography>
-              <Stack spacing={2}>
-                <FormControl fullWidth error={!!errors.mainCategory} required>
-                  <InputLabel>Main Category</InputLabel>
-                  <Select
-                    name="mainCategory"
-                    value={formData.mainCategory}
-                    onChange={handleChange}
-                    label="Main Category"
-                  >
-                    {categories.mainCategories.map(category => (
-                      <MenuItem key={category} value={category}>
-                        {category}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+        <Box sx={{ mt: 4 }}>
+          {Object.keys(errors).length > 0 && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Please fix the following errors:
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {Object.values(errors).map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+          {renderStepContent()}
+        </Box>
 
-                <FormControl fullWidth error={!!errors.field} required>
-                  <InputLabel>Field</InputLabel>
-                  <Select
-                    name="field"
-                    value={formData.field}
-                    onChange={handleChange}
-                    label="Field"
-                  >
-                    {categories.fields.map(field => (
-                      <MenuItem key={field} value={field}>
-                        {field}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <Autocomplete
-                  multiple
-                  options={categories.careerPaths}
-                  value={formData.careerPaths}
-                  onChange={(e, newValue) => {
-                    setFormData(prev => ({ ...prev, careerPaths: newValue }));
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Career Paths"
-                      error={!!errors.careerPaths}
-                      helperText={errors.careerPaths}
-                      required
-                    />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip label={option} {...getTagProps({ index })} />
-                    ))
-                  }
-                />
-              </Stack>
-            </Box>
-
-            {/* Challenge Details */}
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Challenge Details
-              </Typography>
-              <Stack spacing={2}>
-                <FormControl fullWidth error={!!errors.difficulty} required>
-                  <InputLabel>Difficulty Level</InputLabel>
-                  <Select
-                    name="difficulty"
-                    value={formData.difficulty}
-                    onChange={handleChange}
-                    label="Difficulty Level"
-                  >
-                    {categories.difficulties.map(level => (
-                      <MenuItem key={level} value={level}>
-                        {level}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <TextField
-                  label="Time Estimate"
-                  name="timeEstimate"
-                  value={formData.timeEstimate}
-                  onChange={handleChange}
-                  error={!!errors.timeEstimate}
-                  helperText={errors.timeEstimate || 'e.g., 30 mins, 1 hour'}
-                  required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <AccessTimeIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                <TextField
-                  label="Points"
-                  name="points"
-                  type="number"
-                  value={formData.points}
-                  onChange={handleChange}
-                  error={!!errors.points}
-                  helperText={errors.points || 'Reward points for completing the challenge'}
-                  required
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <StarIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  options={suggestedTags}
-                  value={formData.tags}
-                  onChange={(e, newValue) => {
-                    setFormData(prev => ({ ...prev, tags: newValue }));
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Tags"
-                      helperText="Add relevant tags to help users find your challenge"
-                    />
-                  )}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip label={option} {...getTagProps({ index })} />
-                    ))
-                  }
-                />
-              </Stack>
-            </Box>
-
-            {/* Challenge Content */}
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Challenge Content
-              </Typography>
-              <Stack spacing={2}>
-                <TextField
-                  label="Instructions"
-                  name="instructions"
-                  value={formData.instructions}
-                  onChange={handleChange}
-                  error={!!errors.instructions}
-                  helperText={errors.instructions || 'Detailed instructions for completing the challenge'}
-                  multiline
-                  rows={4}
-                  fullWidth
-                  required
-                />
-
-                <TextField
-                  label="Evaluation Criteria"
-                  name="evaluation"
-                  value={formData.evaluation}
-                  onChange={handleChange}
-                  error={!!errors.evaluation}
-                  helperText={errors.evaluation || 'How will submissions be evaluated?'}
-                  multiline
-                  rows={3}
-                  fullWidth
-                  required
-                />
-
-                <TextField
-                  label="Additional Resources"
-                  name="resources"
-                  value={formData.resources}
-                  onChange={handleChange}
-                  helperText="Optional: Add links to helpful resources"
-                  multiline
-                  rows={2}
-                  fullWidth
-                />
-
-                <TextField
-                  label="Prerequisites"
-                  name="prerequisites"
-                  value={formData.prerequisites}
-                  onChange={handleChange}
-                  helperText="Optional: List any required skills or knowledge"
-                  multiline
-                  rows={2}
-                  fullWidth
-                />
-              </Stack>
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
-              <Button variant="outlined" onClick={() => window.history.back()}>
-                Cancel
-              </Button>
-              <Button variant="contained" type="submit">
-                Create Challenge
-              </Button>
-            </Box>
-          </Stack>
-        </form>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Button
+            disabled={activeStep === 0}
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
+          >
+            {activeStep === steps.length - 1 ? 'Create Challenge' : 'Next'}
+          </Button>
+        </Box>
       </Paper>
     </Container>
   );

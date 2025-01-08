@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const connectDB = require("./config/database");
 const controllers = require("./controllers");
 const responseType = require("./types/responseType");
+const cors = require("cors");
 
 console.log("�� Application starting...");
 
@@ -11,6 +12,10 @@ async function createApp(options = {}) {
   const app = express();
 
   // Middleware
+  app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+  }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

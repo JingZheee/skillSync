@@ -1,20 +1,20 @@
 import axios, { AxiosPromise } from "axios";
-import Constants from "expo-constants";
-import { showToast } from "@/components/toasts/toast";
+import {toast} from "react-toastify";
 
-const API_ENDPOINT = process.env.API_ENDPOINT;
+const API_ENDPOINT = process.env.API_ENDPOINT || "http://localhost:5005";
 
 // Create axios instance with default config
 const client = axios.create({
-  baseURL: API_ENDPOINT,
+  baseURL: API_ENDPOINT + "/api",
   headers: {
     "Content-Type": "application/json",
-    platform: Constants?.expoConfig?.extra?.appPlatform || "mobile_app",
+    platform: "web_app",
   },
 });
 
 class APIService {
   static get(path = "", params = {}) {
+
     return client({
       method: "GET",
       url: path,
@@ -64,7 +64,7 @@ client.interceptors.response.use(
 
     // Handle network error
     if (error.message === "Network Error") {
-      showToast.error(
+      toast.error(
         "Network Error",
         "Please check your internet connection and API endpoint"
       );
@@ -79,12 +79,12 @@ client.interceptors.response.use(
     if (response) {
       switch (response.status) {
         case 500:
-          showToast.error("Server Error", "Something went wrong on our end");
+          toast.error("Server Error", "Something went wrong on our end");
           console.error("Server Error");
           break;
 
         case 502:
-          showToast.error(
+          toast.error(
             "Server Down",
             "Our servers are currently unavailable"
           );
@@ -97,9 +97,9 @@ client.interceptors.response.use(
         default:
           // Handle any other API errors
           if (response.data?.error && response.data?.message) {
-            showToast.error(response.data.error, response.data.message);
+            toast.error(response.data.error, response.data.message);
           } else {
-            showToast.error(
+            toast.error(
               "Error",
               response.data?.message || "Something went wrong"
             );
