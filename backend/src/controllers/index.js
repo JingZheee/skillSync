@@ -1,27 +1,27 @@
 const TagController = require("./tags/tag.controller");
 const TagService = require("../services/tags/tag.service");
-const { Tag } = require("../models");
+const Tag = require("../models/tag");
 const StudentController = require("./students/student.controller");
 const StudentService = require("../services/students/student.service");
-const { Student } = require("../models");
+const Student = require("../models/student");
 const CompanyController = require("./companies/company.controller");
 const CompanyService = require("../services/companies/company.service");
-const { Company } = require("../models");
+const Company = require("../models/company");
 const ChallengeController = require("./challenges/challenge.controller");
 const ChallengeService = require("../services/challenges/challenge.service");
-const { Challenge } = require("../models");
+const Challenge = require("../models/challenge");
 const HackathonController = require("./hackathons/hackathon.controller");
 const HackathonService = require("../services/hackathons/hackathon.service");
-const { Hackathon } = require("../models");
+const Hackathon = require("../models/hackathon");
 const CourseController = require("./courses/course.controller");
 const CourseService = require("../services/courses/course.service");
-const { Course } = require("../models");
+const Course = require("../models/course");
 const FieldController = require("./fields/field.controller");
 const FieldService = require("../services/fields/field.service");
-const { Field } = require("../models");
+const Field = require("../models/field");
 const RankingController = require("./rankings/ranking.controller");
 const RankingService = require("../services/rankings/ranking.service");
-const { Ranking } = require("../models");
+const Ranking = require("../models/ranking");
 
 module.exports = [
   {

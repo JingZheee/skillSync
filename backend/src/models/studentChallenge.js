@@ -12,7 +12,16 @@ const studentChallengeSchema = new mongoose.Schema(
       enum: ["Pending", "Approved", "Rejected"],
       default: "Pending",
     },
-    uploadedFile: { type: String },
+    submittedFiles: [
+      {
+        filename: String,
+        originalName: String,
+        path: String,
+        size: Number,
+        mimetype: String,
+      },
+    ],
+    notes: String,
     submittedDate: { type: Date },
   },
   {

@@ -1,10 +1,8 @@
-class BaseType {
-  static success(data, message = "Success", metadata = {}) {
+class ResponseType {
+  static success(data) {
     return {
       success: true,
-      message,
       data,
-      ...metadata
     };
   }
 
@@ -13,7 +11,7 @@ class BaseType {
       success: false,
       message,
       code,
-      errors
+      errors,
     };
   }
 
@@ -24,10 +22,10 @@ class BaseType {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 }
 
-module.exports = BaseType;
+module.exports = ResponseType;

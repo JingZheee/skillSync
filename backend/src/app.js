@@ -12,10 +12,12 @@ async function createApp(options = {}) {
   const app = express();
 
   // Middleware
-  app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-  }));
+  app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -54,17 +56,39 @@ async function createApp(options = {}) {
     throw error;
   }
 
-  controllers.forEach(({ Controller, Service, Model, subControllers }) => {
-    const service = new Service(Model);
-    const controller = new Controller(service);
-    if (subControllers) {
-      controller.setSubControllers(subControllers);
-    }
-    app.use(`/api/${controller.getPath()}`, controller.getRouter());
-  });
+  controllers.forEach(({ Controller, Service, Model }) => {
+    try {
+      if (!Controller || !Service || !Model) {
+        throw new Error("Missing required controller components");
+      }
 
-  app.get("/api/test", (req, res) => {
-    res.send("Hello World");
+      console.log(`📝 Initializing controller:`, {
+        controller: Controller.name,
+        service: Service.name,
+        model: Model.modelName,
+      });
+
+      const service = new Service(Model);
+      const controller = new Controller(service);
+      const path = controller.getPath();
+
+      if (!path) {
+        throw new Error(`Invalid path returned from ${Controller.name}`);
+      }
+
+      console.log(`🔌 Mounting route at /api/${path}`);
+
+      app.use(`/api/${path}`, controller.getRouter());
+    } catch (error) {
+      console.error(
+        `❌ Failed to initialize controller ${Controller?.name || "Unknown"}:`,
+        error
+      );
+      // Depending on your error handling strategy, you might want to:
+      // - throw the error to stop the application
+      // - continue with other controllers
+      throw error;
+    }
   });
 
   return app;
