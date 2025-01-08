@@ -13,8 +13,10 @@ import {
   InputLabel,
 } from '@mui/material';
 import { Autocomplete, TextField } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 export default function SurveyForm() {
+  const router = useRouter();
   const [selectedField, setSelectedField] = useState('');
   const [selectedSkills, setSelectedSkills] = useState([]);
 
@@ -70,6 +72,9 @@ export default function SurveyForm() {
     console.log('Selected field:', selectedField);
     console.log('Selected skills:', selectedSkills);
     // Add your API call here
+    
+    // After successful submission, navigate to homepage
+    router.push('/homepage');
   };
 
   return (

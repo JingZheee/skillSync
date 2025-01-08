@@ -109,7 +109,7 @@ export default function CreateHackathonPage() {
           alternativeLabel
         >
           {steps.map((step, index) => (
-            <Step key={step.label}>
+            <Step key={step.label} completed={undefined}>
               <StepLabel 
                 StepIconComponent={step.icon}
                 sx={{

@@ -18,9 +18,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import WorkIcon from '@mui/icons-material/Work';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 // Updated Navigation items with dropdown
-const pages = [
+const getPages = (isCompany) => [
   { 
     title: 'Resources',
     items: [
@@ -31,21 +34,29 @@ const pages = [
   },
   { title: 'Mini Challenges', path: '/challenges' },
   { title: 'Hackathon', path: '/hackathon' },
+  ...(isCompany ? [{ title: 'Talent Pool', path: '/talent-pool' }] : []),
 ];
 
-// Updated user menu items (keeping the same for now, but you can modify if needed)
-const userMenuItems = [
-  { title: 'Profile', path: '/profile' },
-  { title: 'Dashboard', path: '/dashboard' },
+// Update the user menu items to be dynamic based on user type
+const getUserMenuItems = (isCompany) => [
+  ...(isCompany 
+    ? [{ title: 'Dashboard', path: '/company/dashboard' }] 
+    : [{ title: 'Profile', path: '/profile' }]
+  ),
   { title: 'Settings', path: '/settings' },
   { title: 'Logout', path: '/logout' },
 ];
 
 export default function Header() {
+  const { isCompany, user } = useAuth();
   const router = useRouter();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [resourcesAnchor, setResourcesAnchor] = useState(null);
+
+  // Get pages and menu items based on user type
+  const pages = getPages(isCompany);
+  const userMenuItems = getUserMenuItems(isCompany);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -227,25 +238,35 @@ export default function Header() {
             )}
           </Box>
 
-          {/* Right Side - Search & User Menu */}
+          {/* Right Side - User Info & Menu */}
           <Stack direction="row" spacing={2} alignItems="center">
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ 
-                display: { xs: 'none', md: 'flex' },
-                borderRadius: '20px',
-                px: 3,
-              }}
-            >
-              Join Now
-            </Button>
+            <Box sx={{ 
+              display: { xs: 'none', md: 'flex' },
+              alignItems: 'center',
+              gap: 1
+            }}>
+              {isCompany ? (
+                <>
+                  <WorkIcon color="primary" />
+                  <Typography variant="subtitle2" color="text.primary">
+                    {user?.name || 'Company'}
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <EmojiEventsIcon color="primary" />
+                  <Typography variant="subtitle2" color="text.primary">
+                    Rank: {user?.rank || 'Silver'}
+                  </Typography>
+                </>
+              )}
+            </Box>
 
             {/* User Menu */}
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="User Name" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt={user?.name} src={user?.avatar} />
                 </IconButton>
               </Tooltip>
               <Menu

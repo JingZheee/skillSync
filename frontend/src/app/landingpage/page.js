@@ -13,8 +13,11 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SchoolIcon from '@mui/icons-material/School';
 import BusinessIcon from '@mui/icons-material/Business';
 import StarIcon from '@mui/icons-material/Star';
+import { useRouter } from 'next/navigation';
 
 export default function LandingPage() {
+  const router = useRouter();
+
   const features = [
     {
       title: "Challenge-Based Learning",
@@ -55,6 +58,10 @@ export default function LandingPage() {
       description: "Master advanced challenges and connect directly with industry opportunities."
     }
   ];
+
+  const handleRegister = (type) => {
+    router.push(`/auth/register?type=${type}`);
+  };
 
   return (
     <Container maxWidth="lg">
@@ -152,6 +159,7 @@ export default function LandingPage() {
             variant="contained" 
             size="large"
             startIcon={<SchoolIcon />}
+            onClick={() => handleRegister('student')}
             sx={{
               backgroundColor: '#FBAC01',
               '&:hover': {
@@ -167,6 +175,7 @@ export default function LandingPage() {
             variant="outlined" 
             size="large"
             startIcon={<BusinessIcon />}
+            onClick={() => handleRegister('employer')}
             sx={{
               borderColor: '#FF7409',
               color: '#FF7409',
