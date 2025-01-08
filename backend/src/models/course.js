@@ -4,7 +4,13 @@ const courseSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
+    field: {
+      main: { type: mongoose.Schema.Types.ObjectId, ref: "Field" },
+      sub: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubField" }],
+    },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
+    deleted_at: Date,
   },
   {
     timestamps: {
@@ -13,16 +19,6 @@ const courseSchema = new mongoose.Schema(
     },
   }
 );
-
-courseSchema.add({ deleted_at: Date });
-
-courseSchema.virtual("tags", {
-  ref: "CourseTag",
-  localField: "_id",
-  foreignField: "course",
-  justOne: false,
-  populate: { path: "tag" },
-});
 
 const Course = mongoose.model("Course", courseSchema);
 

@@ -3,26 +3,19 @@ const mongoose = require("mongoose");
 const studentChallengeSchema = new mongoose.Schema(
   {
     student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
-    miniChallenge: {
+    challenge: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "MiniChallenge",
+      ref: "Challenge",
     },
     status: {
       type: String,
-      enum: ["Pending", "Approved", "Rejected"],
-      default: "Pending",
+      enum: ["Not Started", "In Progress", "Completed"],
+      default: "Not Started",
     },
-    submittedFiles: [
-      {
-        filename: String,
-        originalName: String,
-        path: String,
-        size: Number,
-        mimetype: String,
-      },
-    ],
-    notes: String,
-    submittedDate: { type: Date },
+    startedAt: { type: Date },
+    completedAt: { type: Date },
+    submissions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Submission" }],
+    deleted_at: Date,
   },
   {
     timestamps: {
@@ -31,8 +24,6 @@ const studentChallengeSchema = new mongoose.Schema(
     },
   }
 );
-
-studentChallengeSchema.add({ deleted_at: Date });
 
 const StudentChallenge = mongoose.model(
   "StudentChallenge",

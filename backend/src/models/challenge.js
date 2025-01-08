@@ -3,31 +3,46 @@ const mongoose = require("mongoose");
 const challengeSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    description: { type: String },
-    difficulty: { type: String, enum: ["easy", "medium", "hard"] },
-    timeEstimate: { type: Number },
-    learningObjective: { type: [String] },
+    description: { type: String, required: true },
+    difficulty: {
+      type: String,
+      enum: ["easy", "medium", "hard"],
+      required: true,
+    },
+    timeEstimate: { type: Number, required: true }, // in minutes
+    points: { type: Number, default: 100 },
+    learningObjective: [{ type: String }],
+    stepToStepInstructions: [{ type: String }],
     challengeFiles: [
       {
         filename: { type: String, required: true },
+        originalName: { type: String, required: true },
         path: { type: String, required: true },
+        size: { type: Number, required: true },
+        mimetype: { type: String, required: true },
       },
     ],
-    stepToStepInstructions: { type: [String] },
-    additionalResources: {
-      type: Map,
-      of: {
-        title: String,
-        url: String,
+    submissionGuidelines: [{ type: String }],
+    evaluationCriteria: [{ type: String }],
+    additionalResources: [
+      {
+        title: { type: String, required: true },
+        url: { type: String, required: true },
       },
+    ],
+    field: {
+      main: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Field",
+        required: true,
+      },
+      sub: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubField" }],
     },
-    submissionGuidelines: { type: [String] },
-    evaluationCriteria: { type: [String] },
-    createdDate: { type: Date, default: Date.now },
-    uploadedFile: { type: String },
-    field: { type: mongoose.Schema.Types.ObjectId, ref: "Field" },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
     hackathon: { type: mongoose.Schema.Types.ObjectId, ref: "Hackathon" },
+    completedBy: { type: Number, default: 0 },
+    deleted_at: Date,
   },
   {
     timestamps: {
@@ -37,16 +52,6 @@ const challengeSchema = new mongoose.Schema(
   }
 );
 
-challengeSchema.virtual("tags", {
-  ref: "ChallengeTag",
-  localField: "_id",
-  foreignField: "challengeId",
-  justOne: false,
-  populate: { path: "tag" },
-});
+const Challenge = mongoose.model("Challenge", challengeSchema);
 
-challengeSchema.add({ deleted_at: Date });
-
-const MiniChallenge = mongoose.model("MiniChallenge", challengeSchema);
-
-module.exports = MiniChallenge;
+module.exports = Challenge;

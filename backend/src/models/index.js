@@ -9,17 +9,8 @@ const Course = require("./course");
 const StudentChallenge = require("./studentChallenge");
 const StudentHackathon = require("./studentHackathon");
 const StudentCourse = require("./studentCourse");
-const StudentTag = require("./studentTag");
-const CompanyTag = require("./companyTag");
-const ChallengeTag = require("./challengeTag");
-const HackathonTag = require("./hackathonTag");
-const CourseTag = require("./courseTag");
-const StudentField = require("./studentField");
-const CompanyField = require("./companyField");
-const HackathonField = require("./hackathonField");
-const CourseField = require("./courseField");
 const SubField = require("./subField");
-const ChallengeField = require("./challengeField");
+const Submission = require("./submission");
 
 module.exports = {
   Ranking,
@@ -33,15 +24,6 @@ module.exports = {
   StudentChallenge,
   StudentHackathon,
   StudentCourse,
-  StudentTag,
-  CompanyTag,
-  ChallengeTag,
-  HackathonTag,
-  CourseTag,
-  StudentField,
-  CompanyField,
-  HackathonField,
-  CourseField,
-  ChallengeField,
+  Submission,
   SubField,
 };

@@ -3,12 +3,15 @@ const mongoose = require("mongoose");
 const studentSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    phone: { type: String },
     email: { type: String, unique: true, required: true },
-    university: { type: String },
     password: { type: String, required: true },
-    field: { type: mongoose.Schema.Types.ObjectId, ref: "Field" },
-    rank: { type: mongoose.Schema.Types.ObjectId, ref: "Ranking" },
+    phone: { type: String },
+    field: {
+      main: { type: mongoose.Schema.Types.ObjectId, ref: "Field" },
+      sub: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubField" }],
+    },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
+    deleted_at: Date,
   },
   {
     timestamps: {
@@ -17,8 +20,6 @@ const studentSchema = new mongoose.Schema(
     },
   }
 );
-
-studentSchema.add({ deleted_at: Date });
 
 const Student = mongoose.model("Student", studentSchema);
 

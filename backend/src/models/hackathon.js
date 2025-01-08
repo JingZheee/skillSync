@@ -11,9 +11,15 @@ const hackathonSchema = new mongoose.Schema(
     registrationEndDate: { type: Date },
     timeline: { type: String },
     coverUrl: { type: String },
+    field: {
+      main: { type: mongoose.Schema.Types.ObjectId, ref: "Field" },
+      sub: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubField" }],
+    },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
+    company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
     createdDate: { type: Date, default: Date.now },
     uploadedFile: { type: String },
-    company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
+    deleted_at: Date,
   },
   {
     timestamps: {
@@ -22,16 +28,6 @@ const hackathonSchema = new mongoose.Schema(
     },
   }
 );
-
-hackathonSchema.virtual("tags", {
-  ref: "ChallengeTag",
-  localField: "_id",
-  foreignField: "hackathonId",
-  justOne: false,
-  populate: { path: "tag" },
-});
-
-hackathonSchema.add({ deleted_at: Date });
 
 const Hackathon = mongoose.model("Hackathon", hackathonSchema);
 
