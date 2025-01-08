@@ -1,14 +1,15 @@
 const BaseController = require("../base.controller");
+const createUploader = require("../../middleware/fileUpload");
 
 class ChallengeController extends BaseController {
   constructor(service) {
     super(service);
     this.getByCompanyId = this.getByCompanyId.bind(this);
     this.getByHackathonId = this.getByHackathonId.bind(this);
-    // Student Challenges
     this.getStudentSubmissions = this.getStudentSubmissions.bind(this);
     this.submitChallenge = this.submitChallenge.bind(this);
     this.updateSubmissionStatus = this.updateSubmissionStatus.bind(this);
+    this.create = this.create.bind(this);
   }
 
   getPath() {
@@ -18,15 +19,58 @@ class ChallengeController extends BaseController {
   initializeRoutes() {
     super.initializeRoutes();
 
-    this.router.get("/company/:companyId", this.getByCompanyId);
-    this.router.get("/hackathon/:hackathonId", this.getByHackathonId);
-    // Student Challenges
-    this.router.get("/:id/submissions", this.getStudentSubmissions);
-    this.router.post("/:id/submit", this.submitChallenge);
-    this.router.patch(
-      "/submission/:submissionId/status",
-      this.updateSubmissionStatus
+    this.router.post(
+      "/",
+      createUploader("uploads/challenges/files").array("files", 5),
+      (req, res) => this.create(req, res)
     );
+
+    this.router.get("/company/:companyId", (req, res) =>
+      this.getByCompanyId(req, res)
+    );
+    this.router.get("/hackathon/:hackathonId", (req, res) =>
+      this.getByHackathonId(req, res)
+    );
+    this.router.get("/:id/submissions", (req, res) =>
+      this.getStudentSubmissions(req, res)
+    );
+    this.router.post(
+      "/:id/submit",
+      createUploader("uploads/challenges/submissions").array("files", 5),
+      (req, res) => this.submitChallenge(req, res)
+    );
+    this.router.patch("/submission/:submissionId/status", (req, res) =>
+      this.updateSubmissionStatus(req, res)
+    );
+  }
+
+  async create(req, res) {
+    try {
+      const challengeData = JSON.parse(req.body.data);
+
+      // Handle uploaded files
+      const challengeFiles =
+        req.files?.map((file) => ({
+          filename: file.filename,
+          originalName: file.originalname,
+          path: file.path,
+          size: file.size,
+          mimetype: file.mimetype,
+        })) || [];
+
+      const data = await this.service.create({
+        ...challengeData,
+        challengeFiles,
+      });
+
+      res
+        .status(201)
+        .json(
+          this.responseType.success(data, "Challenge created successfully")
+        );
+    } catch (error) {
+      res.status(400).json(this.responseType.error(error.message));
+    }
   }
 
   async getByCompanyId(req, res) {
@@ -62,12 +106,24 @@ class ChallengeController extends BaseController {
   async submitChallenge(req, res) {
     try {
       const { id } = req.params;
-      const { studentId, uploadedFile } = req.body;
+      const { studentId, notes } = req.body;
+
+      // Handle uploaded files
+      const uploadedFiles = req.files.map((file) => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        path: file.path,
+        size: file.size,
+        mimetype: file.mimetype,
+      }));
+
       const data = await this.service.submitChallenge(
         id,
         studentId,
-        uploadedFile
+        uploadedFiles,
+        notes
       );
+
       res
         .status(201)
         .json(

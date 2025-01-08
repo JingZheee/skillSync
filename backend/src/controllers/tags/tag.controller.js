@@ -18,13 +18,23 @@ class TagController extends BaseController {
   initializeRoutes() {
     // Call parent's routes first
     super.initializeRoutes();
-    
+
     // Add all tag-related routes
-    this.router.get("/field/:fieldId", this.getByFieldId);
-    this.router.get("/student/:studentId", this.getByStudentId);
-    this.router.get("/company/:companyId", this.getByCompanyId);
-    this.router.get("/hackathon/:hackathonId", this.getByHackathonId);
-    this.router.get("/challenge/:challengeId", this.getByChallengeId);
+    this.router.get("/field/:fieldId", (req, res) =>
+      this.getByFieldId(req, res)
+    );
+    this.router.get("/student/:studentId", (req, res) =>
+      this.getByStudentId(req, res)
+    );
+    this.router.get("/company/:companyId", (req, res) =>
+      this.getByCompanyId(req, res)
+    );
+    this.router.get("/hackathon/:hackathonId", (req, res) =>
+      this.getByHackathonId(req, res)
+    );
+    this.router.get("/challenge/:challengeId", (req, res) =>
+      this.getByChallengeId(req, res)
+    );
   }
 
   async getByFieldId(req, res) {
