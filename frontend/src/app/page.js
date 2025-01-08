@@ -1,18 +1,55 @@
-'use client';
-import { Box, Typography, Button, Paper, Stack, Container } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+"use client";
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  Stack,
+  Container,
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { useState } from "react";
 
 export default function Home() {
   const theme = useTheme();
+  const [apiResponse, setApiResponse] = useState(null);
+
+  const testBackendConnection = async () => {
+    try {
+      const response = await ApiService.get(API.test);
+      const data = await response.json();
+      console.log(data);
+      setApiResponse(data);
+    } catch (error) {
+      setApiResponse({ error: "Failed to connect to backend" });
+    }
+  };
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ minHeight: '100vh', py: 4 }}>
+      <Box sx={{ minHeight: "100vh", py: 4 }}>
+        {/* Add Backend Test Section */}
+        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Backend Connection Test
+          </Typography>
+          <Stack direction="column" spacing={2}>
+            <Button variant="contained" onClick={testBackendConnection}>
+              Test Backend Connection
+            </Button>
+            {apiResponse && (
+              <Typography variant="body1">
+                Response: {JSON.stringify(apiResponse)}
+              </Typography>
+            )}
+          </Stack>
+        </Paper>
+
         {/* Theme Color Showcase */}
         <Typography variant="h3" gutterBottom>
           Theme Colors
         </Typography>
-        
+
         {/* Primary Colors */}
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
           <Typography variant="h6" gutterBottom>
