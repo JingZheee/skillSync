@@ -64,8 +64,8 @@ const mockStudents = [
   // Technology Students
   {
     id: 1,
-    name: 'Ahmad Zulkifli',
-    avatar: '/avatars/ahmad.jpg',
+    name: 'Ivan Tay',
+    avatar: '/avatars/ivan.jpg',
     category: 'Technology',
     subCategory: 'Web Development',
     skills: ['JavaScript', 'React', 'Node.js', 'AWS'],
