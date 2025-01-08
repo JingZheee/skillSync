@@ -32,13 +32,21 @@ import {
 } from '@mui/icons-material';
 import { useRouter, useParams } from 'next/navigation';
 import SubmitChallengeModal from '@/components/SubmitChallengeModal';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function ChallengePage() {
+export default function ChallengePage({ 
+  hideSubmitButton = false,
+  hideBackButton = false 
+}) {
   const router = useRouter();
   const { id } = useParams();
   const theme = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSubmitModal, setOpenSubmitModal] = useState(false);
+  const { isStudent } = useAuth();
+
+  // Only show submit button for students
+  hideSubmitButton = hideSubmitButton || !isStudent;
 
   // Common styles for reuse
   const sectionStyles = {
@@ -149,16 +157,19 @@ export default function ChallengePage() {
       py: 4,
     }}>
       <Container maxWidth="lg">
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.back()}
-          sx={{ 
-            mb: 4,
-            ...cardStyles,
-          }}
-        >
-          Back to Challenges
-        </Button>
+        {/* Back Button - Only show if hideBackButton is false */}
+        {!hideBackButton && (
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => router.back()}
+            sx={{ 
+              mb: 4,
+              ...cardStyles,
+            }}
+          >
+            Back to Challenges
+          </Button>
+        )}
 
         <Grid container spacing={3}>
           {/* Main Content */}
@@ -399,37 +410,41 @@ export default function ChallengePage() {
                 </List>
               </Paper>
 
-              {/* Submit Section */}
-              <Paper elevation={0} sx={sectionStyles}>
-                <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
-                  Make sure you've reviewed all requirements
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={() => setOpenSubmitModal(true)}
-                  sx={{ 
-                    py: 2,
-                    borderRadius: 2,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Submit Challenge
-                </Button>
-              </Paper>
+              {/* Submit Section - Only show if hideSubmitButton is false */}
+              {!hideSubmitButton && (
+                <Paper elevation={0} sx={sectionStyles}>
+                  <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+                    Make sure you've reviewed all requirements
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    onClick={() => setOpenSubmitModal(true)}
+                    sx={{ 
+                      py: 2,
+                      borderRadius: 2,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Submit Challenge
+                  </Button>
+                </Paper>
+              )}
             </Stack>
           </Grid>
         </Grid>
       </Container>
 
-      {/* Submission Modal */}
-      <SubmitChallengeModal
-        open={openSubmitModal}
-        onClose={() => setOpenSubmitModal(false)}
-        challengeId={id}
-        submissionGuidelines={challenge.submissionGuidelines}
-      />
+      {/* Submit Modal - Only render if hideSubmitButton is false */}
+      {!hideSubmitButton && (
+        <SubmitChallengeModal
+          open={openSubmitModal}
+          onClose={() => setOpenSubmitModal(false)}
+          challengeId={id}
+          submissionGuidelines={challenge.submissionGuidelines}
+        />
+      )}
     </Box>
   );
 } 
