@@ -283,22 +283,149 @@ useEffect(() => {
   }, [selectedFieldForSkills]);
 
   // Helper function to get skills data for pie chart with different percentages
-  const getSkillsData = (field) => {
-    const skills = categoryConfig[field].skills;
-    
-    // Define specific percentages for each field
-    const percentages = {
-      Technology: [30, 25, 15, 10, 10, 10], // Total 100%
-      Business: [35, 25, 25, 15], // Total 100%
-      Finance: [40, 25, 20, 15], // Total 100%
-      Design: [35, 30, 20, 15], // Total 100%
-      Marketing: [40, 25, 20, 15] // Total 100%
+  const getSkillsData = (field, subCategory) => {
+    const skillPercentages = {
+      Technology: {
+        'Web Development': [
+          { name: 'JavaScript', value: 35 },
+          { name: 'React', value: 25 },
+          { name: 'Node.js', value: 20 },
+          { name: 'Python', value: 15 },
+          { name: 'AWS', value: 5 }
+        ],
+        'Mobile Development': [
+          { name: 'React Native', value: 30 },
+          { name: 'JavaScript', value: 25 },
+          { name: 'Python', value: 20 },
+          { name: 'AWS', value: 15 },
+          { name: 'Machine Learning', value: 10 }
+        ],
+        'Cloud Computing': [
+          { name: 'AWS', value: 40 },
+          { name: 'Python', value: 25 },
+          { name: 'Node.js', value: 20 },
+          { name: 'Machine Learning', value: 15 }
+        ],
+        'Data Science': [
+          { name: 'Python', value: 35 },
+          { name: 'Machine Learning', value: 30 },
+          { name: 'JavaScript', value: 20 },
+          { name: 'AWS', value: 15 }
+        ],
+        'Cybersecurity': [
+          { name: 'Python', value: 30 },
+          { name: 'AWS', value: 25 },
+          { name: 'Node.js', value: 25 },
+          { name: 'JavaScript', value: 20 }
+        ]
+      },
+      Business: {
+        'Strategy': [
+          { name: 'Business Analysis', value: 35 },
+          { name: 'Strategic Planning', value: 30 },
+          { name: 'Leadership', value: 20 },
+          { name: 'Project Management', value: 15 }
+        ],
+        'Operations': [
+          { name: 'Project Management', value: 40 },
+          { name: 'Business Analysis', value: 25 },
+          { name: 'Leadership', value: 20 },
+          { name: 'Strategic Planning', value: 15 }
+        ],
+        'Management': [
+          { name: 'Leadership', value: 35 },
+          { name: 'Project Management', value: 25 },
+          { name: 'Strategic Planning', value: 25 },
+          { name: 'Business Analysis', value: 15 }
+        ],
+        'Entrepreneurship': [
+          { name: 'Strategic Planning', value: 35 },
+          { name: 'Leadership', value: 30 },
+          { name: 'Business Analysis', value: 20 },
+          { name: 'Project Management', value: 15 }
+        ]
+      },
+      Finance: {
+        'Investment': [
+          { name: 'Financial Analysis', value: 40 },
+          { name: 'Risk Assessment', value: 25 },
+          { name: 'Trading Strategies', value: 20 },
+          { name: 'Blockchain', value: 15 }
+        ],
+        'FinTech': [
+          { name: 'Blockchain', value: 35 },
+          { name: 'Financial Analysis', value: 25 },
+          { name: 'Trading Strategies', value: 25 },
+          { name: 'Risk Assessment', value: 15 }
+        ],
+        'Risk Management': [
+          { name: 'Risk Assessment', value: 40 },
+          { name: 'Financial Analysis', value: 30 },
+          { name: 'Trading Strategies', value: 20 },
+          { name: 'Blockchain', value: 10 }
+        ],
+        'Trading': [
+          { name: 'Trading Strategies', value: 35 },
+          { name: 'Financial Analysis', value: 25 },
+          { name: 'Risk Assessment', value: 25 },
+          { name: 'Blockchain', value: 15 }
+        ]
+      },
+      Design: {
+        'UI/UX': [
+          { name: 'UI Design', value: 35 },
+          { name: 'Wireframing', value: 25 },
+          { name: 'User Research', value: 25 },
+          { name: 'Prototyping', value: 15 }
+        ],
+        'Graphic Design': [
+          { name: 'UI Design', value: 30 },
+          { name: 'Prototyping', value: 30 },
+          { name: 'Wireframing', value: 25 },
+          { name: 'User Research', value: 15 }
+        ],
+        'Product Design': [
+          { name: 'User Research', value: 35 },
+          { name: 'Prototyping', value: 25 },
+          { name: 'UI Design', value: 25 },
+          { name: 'Wireframing', value: 15 }
+        ],
+        'Brand Design': [
+          { name: 'UI Design', value: 40 },
+          { name: 'User Research', value: 25 },
+          { name: 'Wireframing', value: 20 },
+          { name: 'Prototyping', value: 15 }
+        ]
+      },
+      Marketing: {
+        'Digital Marketing': [
+          { name: 'Analytics', value: 35 },
+          { name: 'Content Strategy', value: 25 },
+          { name: 'SEO Optimization', value: 25 },
+          { name: 'Social Media Marketing', value: 15 }
+        ],
+        'Content Marketing': [
+          { name: 'Content Strategy', value: 40 },
+          { name: 'Analytics', value: 25 },
+          { name: 'Social Media Marketing', value: 20 },
+          { name: 'SEO Optimization', value: 15 }
+        ],
+        'Social Media': [
+          { name: 'Social Media Marketing', value: 35 },
+          { name: 'Content Strategy', value: 25 },
+          { name: 'Analytics', value: 25 },
+          { name: 'SEO Optimization', value: 15 }
+        ],
+        'SEO': [
+          { name: 'SEO Optimization', value: 40 },
+          { name: 'Analytics', value: 25 },
+          { name: 'Content Strategy', value: 20 },
+          { name: 'Social Media Marketing', value: 15 }
+        ]
+      }
     };
 
-    return skills.map((skill, index) => ({
-      name: skill,
-      value: percentages[field][index] || 0
-    }));
+    return skillPercentages[field][subCategory] || [];
   };
 
   // Return null on server-side and initial render
@@ -416,7 +543,7 @@ useEffect(() => {
               <ResponsiveContainer width="100%" height={300}>
               <PieChart>
   <Pie
-    data={getSkillsData(selectedFieldForSkills)}
+    data={getSkillsData(selectedFieldForSkills, selectedSubCategory)}
     cx="50%"
     cy="50%"
     labelLine={false}
@@ -424,7 +551,7 @@ useEffect(() => {
     outerRadius={100}
     dataKey="value"
   >
-    {getSkillsData(selectedFieldForSkills).map((entry, index) => (
+    {getSkillsData(selectedFieldForSkills, selectedSubCategory).map((entry, index) => (
       <Cell 
         key={`cell-${index}`} 
         fill={ORANGE_COLORS[index % ORANGE_COLORS.length]} 
