@@ -50,6 +50,7 @@ export default function CreateCoursePage() {
     prerequisites: '',
     curriculum: '',
     resources: '',
+    enrollmentDetails: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -282,6 +283,19 @@ export default function CreateCoursePage() {
                   multiline
                   rows={2}
                   fullWidth
+                />
+
+                <TextField
+                  label="What You'll Get"
+                  name="enrollmentDetails"
+                  value={formData.enrollmentDetails}
+                  onChange={handleChange}
+                  error={!!errors.enrollmentDetails}
+                  helperText={errors.enrollmentDetails || 'List what students will receive upon enrollment (e.g., Course Materials, Certificate, etc.)'}
+                  multiline
+                  rows={4}
+                  fullWidth
+                  required
                 />
               </Stack>
             </Box>
