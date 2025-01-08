@@ -9,6 +9,9 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
+import ApiService from "@/api/apiService";
+import { API } from "@/api/endpoints";
+
 
 export default function Home() {
   const theme = useTheme();
@@ -16,7 +19,7 @@ export default function Home() {
 
   const testBackendConnection = async () => {
     try {
-      const response = await ApiService.get(API.test);
+      const response = await ApiService.get(API.tags.findAll);
       const data = await response.json();
       console.log(data);
       setApiResponse(data);
