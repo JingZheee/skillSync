@@ -120,7 +120,7 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
               />
-              <Link href="/auth/surveyForm" passHref>
+              <Link href="../../company/dashboard" passHref>
                 <Button type="submit" variant="contained" color="primary" fullWidth>
                   Create Account
                 </Button>
