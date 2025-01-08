@@ -15,6 +15,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import GroupsIcon from '@mui/icons-material/Groups';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function CompanyDashboard() {
   const router = useRouter();
@@ -103,11 +104,32 @@ export default function CompanyDashboard() {
                   sx={{ 
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 0.5
+                    gap: 0.5,
+                    mb: stat.title === "Total Participants" ? 2 : 0
                   }}
                 >
                   {stat.change}
                 </Typography>
+                {stat.title === "Total Participants" && (
+                  <Link href="../company/talentpool" passHref>
+                    <Button 
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{
+                        mt: 1,
+                        borderColor: '#9c27b0',
+                        color: '#9c27b0',
+                        '&:hover': {
+                          borderColor: '#7b1fa2',
+                          backgroundColor: 'rgba(156, 39, 176, 0.04)'
+                        }
+                      }}
+                    >
+                      View Talents
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           </Grid>
