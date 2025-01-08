@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -11,57 +11,17 @@ import {
   Button,
   Box,
   Chip,
-  TextField,
-  InputAdornment,
   Stack,
-  Tabs,
-  Tab,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import StarIcon from '@mui/icons-material/Star';
 import CodeIcon from '@mui/icons-material/Code';
-import BusinessIcon from '@mui/icons-material/Business';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import BrushIcon from '@mui/icons-material/Brush';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import ComputerIcon from '@mui/icons-material/Computer';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { useRouter } from 'next/navigation';
-
-const categoryConfig = {
-  Technology: {
-    icon: ComputerIcon,
-    subCategories: ['Web Development', 'Mobile Development', 'Cloud Computing', 'Data Science', 'Cybersecurity'],
-    skills: ['JavaScript', 'Python', 'React', 'Node.js', 'AWS', 'Machine Learning'],
-  },
-  Business: {
-    icon: BusinessIcon,
-    subCategories: ['Strategy', 'Operations', 'Management', 'Entrepreneurship'],
-    skills: ['Business Analysis', 'Project Management', 'Strategic Planning', 'Leadership'],
-  },
-  Finance: {
-    icon: AccountBalanceIcon,
-    subCategories: ['Investment', 'FinTech', 'Risk Management', 'Trading'],
-    skills: ['Financial Analysis', 'Risk Assessment', 'Blockchain', 'Trading Strategies'],
-  },
-  Design: {
-    icon: BrushIcon,
-    subCategories: ['UI/UX', 'Graphic Design', 'Product Design', 'Brand Design'],
-    skills: ['UI Design', 'User Research', 'Wireframing', 'Prototyping'],
-  },
-  Marketing: {
-    icon: CampaignIcon,
-    subCategories: ['Digital Marketing', 'Content Marketing', 'Social Media', 'SEO'],
-    skills: ['Social Media Marketing', 'Content Strategy', 'Analytics', 'SEO Optimization'],
-  }
-};
+import FilterSection from '@/components/FilterSection';
+import ApiService from "@/api/apiService";
+import { API } from "@/api/endpoints";
 
 const getDifficultyColor = (difficulty) => {
   switch (difficulty.toLowerCase()) {
@@ -75,6 +35,7 @@ const getDifficultyColor = (difficulty) => {
       return 'default';
   }
 };
+
 
 const mockChallenges = {
   Technology: [
@@ -221,274 +182,140 @@ const mockChallenges = {
   ],
 };
 
-function ChallengesPage() {
+export default function ChallengesPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const router = useRouter();
   
   const [selectedCategory, setSelectedCategory] = useState('Technology');
   const [filters, setFilters] = useState({
-    subCategory: 'All',
-    skill: 'All',
-    difficulty: 'All',
+    searchQuery: '',
+    subCategory: '',
+    skill: '',
+    difficulty: '',
   });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
 
-  const currentConfig = categoryConfig[selectedCategory];
+  const [challenges, setChallenges] = useState([]);
 
-  const FilterSection = () => (
-    <Box 
-      sx={{ 
-        p: 2, 
-        bgcolor: 'background.paper',
-        borderRadius: 1,
-        boxShadow: 1,
-        mt: 2,
-        display: showFilters ? 'block' : 'none'
-      }}
-    >
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Sub-Category</InputLabel>
-            <Select
-              value={filters.subCategory}
-              label="Sub-Category"
-              onChange={(e) => setFilters(prev => ({ ...prev, subCategory: e.target.value }))}
-            >
-              <MenuItem value="All">All Sub-Categories</MenuItem>
-              {currentConfig.subCategories.map(option => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Skill</InputLabel>
-            <Select
-              value={filters.skill}
-              label="Skill"
-              onChange={(e) => setFilters(prev => ({ ...prev, skill: e.target.value }))}
-            >
-              <MenuItem value="All">All Skills</MenuItem>
-              {currentConfig.skills.map(option => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Difficulty</InputLabel>
-            <Select
-              value={filters.difficulty}
-              label="Difficulty"
-              onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
-            >
-              <MenuItem value="All">All Difficulties</MenuItem>
-              {['Easy', 'Medium', 'Hard'].map(option => (
-                <MenuItem key={option} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-    </Box>
-  );
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      const data = await ApiService.get(API.challenges.findAll);
+      setChallenges(data);
+      console.log(data);
+    };
+    fetchChallenges();
+  }, []);
 
   const filteredChallenges = useMemo(() => {
     return mockChallenges[selectedCategory].filter(challenge => {
-      const matchesSearch = challenge.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          challenge.description.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesSubCategory = filters.subCategory === 'All' || challenge.subCategory === filters.subCategory;
-      const matchesSkill = filters.skill === 'All' || challenge.skills.includes(filters.skill);
-      const matchesDifficulty = filters.difficulty === 'All' || challenge.difficulty === filters.difficulty;
+      const matchesSearch = challenge.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+                          challenge.description.toLowerCase().includes(filters.searchQuery.toLowerCase());
+      const matchesSubCategory = !filters.subCategory || challenge.subCategory === filters.subCategory;
+      const matchesSkill = !filters.skill || challenge.skills.includes(filters.skill);
+      const matchesDifficulty = !filters.difficulty || challenge.difficulty === filters.difficulty;
 
       return matchesSearch && matchesSubCategory && matchesSkill && matchesDifficulty;
     });
-  }, [selectedCategory, searchQuery, filters]);
+  }, [selectedCategory, filters]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack spacing={4}>
-        {/* Header */}
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Skill Challenges
-          </Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
-            Enhance your skills across different domains with practical challenges
-          </Typography>
-        </Box>
+      <FilterSection
+        filters={filters}
+        onFilterChange={setFilters}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        totalResults={filteredChallenges.length}
+      />
 
-        {/* Category Navigation */}
-        <Tabs
-          value={selectedCategory}
-          onChange={(e, newValue) => {
-            setSelectedCategory(newValue);
-            setFilters({
-              subCategory: 'All',
-              skill: 'All',
-              difficulty: 'All',
-            });
-          }}
-          variant="scrollable"
-          scrollButtons="auto"
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            '& .MuiTab-root': {
-              minHeight: 72,
-              fontSize: '1rem',
-            }
-          }}
-        >
-          {Object.entries(categoryConfig).map(([category, { icon: Icon }]) => (
-            <Tab
-              key={category}
-              value={category}
-              label={category}
-              icon={<Icon />}
-              iconPosition="top"
-            />
-          ))}
-        </Tabs>
-
-        {/* Search and Filters */}
-        <Box>
-          <Stack direction="row" spacing={2}>
-            <TextField
-              placeholder="Search challenges..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              fullWidth
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
+      {/* Challenges Grid */}
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        {filteredChallenges.map((challenge) => (
+          <Grid item xs={12} sm={6} md={4} key={challenge.id}>
+            <Card 
+              sx={{ 
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 6,
+                  transform: 'translateY(-4px)',
+                  transition: 'all 0.3s ease-in-out',
+                },
               }}
-            />
-            <Button 
-              variant="outlined"
-              onClick={() => setShowFilters(!showFilters)}
-              startIcon={<FilterListIcon />}
+              onClick={() => router.push(`/challenges/${challenge.id}`)}
             >
-              Filters
-            </Button>
-          </Stack>
-          <FilterSection />
-        </Box>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box sx={{ mb: 2 }}>
+                  <Chip 
+                    label={challenge.difficulty} 
+                    color={getDifficultyColor(challenge.difficulty)}
+                    size="small"
+                    sx={{ mr: 1 }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <Chip 
+                    label={challenge.subCategory}
+                    variant="outlined"
+                    size="small"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Box>
+                
+                <Typography variant="h6" gutterBottom>
+                  {challenge.title}
+                </Typography>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {challenge.description}
+                </Typography>
 
-        {/* Results count */}
-        <Box>
-          <Typography variant="subtitle2" color="text.secondary">
-            Showing {filteredChallenges.length} challenges
-          </Typography>
-        </Box>
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <AccessTimeIcon fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      {challenge.timeEstimate}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <StarIcon fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      {challenge.points} pts
+                    </Typography>
+                  </Box>
+                </Stack>
 
-        {/* Challenges Grid */}
-        <Grid container spacing={3}>
-          {filteredChallenges.map((challenge) => (
-            <Grid item xs={12} sm={6} md={4} key={challenge.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    boxShadow: 6,
-                    transform: 'translateY(-4px)',
-                    transition: 'all 0.3s ease-in-out',
-                  },
-                }}
-                onClick={() => router.push(`/challenges/${challenge.id}`)}
-              >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {challenge.skills.map((skill) => (
                     <Chip 
-                      label={challenge.difficulty} 
-                      color={getDifficultyColor(challenge.difficulty)}
+                      key={skill}
+                      label={skill}
                       size="small"
-                      sx={{ mr: 1 }}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <Chip 
-                      label={challenge.subCategory}
                       variant="outlined"
-                      size="small"
                       onClick={(e) => e.stopPropagation()}
                     />
-                  </Box>
-                  
-                  <Typography variant="h6" gutterBottom>
-                    {challenge.title}
-                  </Typography>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {challenge.description}
-                  </Typography>
+                  ))}
+                </Box>
+              </CardContent>
 
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <AccessTimeIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        {challenge.timeEstimate}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <StarIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        {challenge.points} pts
-                      </Typography>
-                    </Box>
-                  </Stack>
-
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {challenge.skills.map((skill) => (
-                      <Chip 
-                        key={skill}
-                        label={skill}
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ))}
-                  </Box>
-                </CardContent>
-
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<CodeIcon />}
-                    fullWidth
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/challenges/${challenge.id}`);
-                    }}
-                  >
-                    View Challenge
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Stack>
+              <CardActions sx={{ p: 2, pt: 0 }}>
+                <Button 
+                  variant="contained" 
+                  startIcon={<CodeIcon />}
+                  fullWidth
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/challenges/${challenge.id}`);
+                  }}
+                >
+                  View Challenge
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
-}
-
-export default ChallengesPage; 
+} 
