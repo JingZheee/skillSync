@@ -75,7 +75,7 @@ export default function Register() {
             Don&apos;t have an account?{' '}
             <Link href="/auth/register" passHref>
               <Button variant="text" color="secondary">
-                Sign In
+                Create Account
               </Button>
             </Link>
           </Typography>
