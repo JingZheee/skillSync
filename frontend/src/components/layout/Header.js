@@ -34,7 +34,7 @@ const getPages = (isCompany) => [
   },
   { title: 'Mini Challenges', path: '/challenges' },
   { title: 'Hackathon', path: '/hackathon' },
-  ...(isCompany ? [{ title: 'Talent Pool', path: '/talent-pool' }] : []),
+  ...(isCompany ? [{ title: 'Talent Pool', path: '/company/talentpool' }] : []),
 ];
 
 // Update the user menu items to be dynamic based on user type
