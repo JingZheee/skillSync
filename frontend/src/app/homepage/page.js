@@ -17,7 +17,9 @@ import {
     Card,
     CardContent,
     CardActions,
-    Chip
+    Chip,
+    FormControl,
+    Select
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useState } from 'react';
@@ -31,6 +33,21 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PieChartIcon from '@mui/icons-material/PieChart';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 import { useRouter } from 'next/navigation';
 
 // New array-based data structure
@@ -118,9 +135,200 @@ export default function Homepage() {
 
   const router = useRouter();
 
+  const [selectedFieldForSkills, setSelectedFieldForSkills] = useState('Technology');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('Web Development');
+
+  // Data for bar chart (trending skills) - Copied from university dashboard
+  const [trendingSkillsData] = useState({
+    Technology: [
+      { name: 'JavaScript', growth: 75 },
+      { name: 'Python', growth: 70 },
+      { name: 'React', growth: 65 },
+      { name: 'Node.js', growth: 60 },
+      { name: 'AWS', growth: 55 },
+      { name: 'Machine Learning', growth: 50 },
+    ],
+    Business: [
+      { name: 'Business Analysis', growth: 70 },
+      { name: 'Project Management', growth: 65 },
+      { name: 'Strategic Planning', growth: 60 },
+      { name: 'Leadership', growth: 55 },
+    ],
+    Finance: [
+      { name: 'Financial Analysis', growth: 70 },
+      { name: 'Risk Assessment', growth: 65 },
+      { name: 'Blockchain', growth: 60 },
+      { name: 'Trading Strategies', growth: 55 },
+    ],
+    Design: [
+      { name: 'UI Design', growth: 70 },
+      { name: 'User Research', growth: 65 },
+      { name: 'Wireframing', growth: 60 },
+      { name: 'Prototyping', growth: 55 },
+    ],
+    Marketing: [
+      { name: 'Social Media Marketing', growth: 70 },
+      { name: 'Content Strategy', growth: 65 },
+      { name: 'Analytics', growth: 60 },
+      { name: 'SEO Optimization', growth: 55 },
+    ],
+  });
+
+  const categoryConfig = {
+    Technology: {
+      subCategories: ['Web Development', 'Mobile Development', 'Cloud Computing', 'Data Science', 'Cybersecurity'],
+      skills: ['JavaScript', 'Python', 'React', 'Node.js', 'AWS', 'Machine Learning'],
+    },
+    Business: {
+      subCategories: ['Strategy', 'Operations', 'Management', 'Entrepreneurship'],
+      skills: ['Business Analysis', 'Project Management', 'Strategic Planning', 'Leadership'],
+    },
+    Finance: {
+      subCategories: ['Investment', 'FinTech', 'Risk Management', 'Trading'],
+      skills: ['Financial Analysis', 'Risk Assessment', 'Blockchain', 'Trading Strategies'],
+    },
+    Design: {
+      subCategories: ['UI/UX', 'Graphic Design', 'Product Design', 'Brand Design'],
+      skills: ['UI Design', 'User Research', 'Wireframing', 'Prototyping'],
+    },
+    Marketing: {
+      subCategories: ['Digital Marketing', 'Content Marketing', 'Social Media', 'SEO'],
+      skills: ['Social Media Marketing', 'Content Strategy', 'Analytics', 'SEO Optimization'],
+    }
+  };
+
+  // Update the orange color palette
+  const ORANGE_COLORS = [
+    '#A83000',
+    '#D53C00', // Dark orange
+    '#FD6E00',
+    '#FBAC01',
+    '#FFC23D',
+  ];
+
+  // Helper function to get skills data for pie chart with specific percentages
+  const getSkillsData = (field) => {
+    const skills = categoryConfig[field].skills;
+    
+    // Define specific percentages for each field
+    const percentages = {
+      Technology: [30, 25, 15, 10, 10, 10], // Total 100%
+      Business: [35, 25, 25, 15], // Total 100%
+      Finance: [40, 25, 20, 15], // Total 100%
+      Design: [35, 30, 20, 15], // Total 100%
+      Marketing: [40, 25, 20, 15] // Total 100%
+    };
+
+    return skills.map((skill, index) => ({
+      name: skill,
+      value: percentages[field][index] || 0
+    }));
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ minHeight: 'calc(100vh - 64px)', py: 4 }}>
+        {/* Skills Analytics Section */}
+        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
+          <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
+            Skills Analytics
+          </Typography>
+
+          <Grid container spacing={3}>
+            {/* Trending Skills Section */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Box>
+                      <Box display="flex" alignItems="center">
+                        <TrendingUpIcon sx={{ mr: 1 }} />
+                        <Typography variant="h6">Trending Skills</Typography>
+                      </Box>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 0.5, mb: 2, fontStyle: 'italic' }}>
+                        Trending skills for each study field
+                      </Typography>
+                    </Box>
+                    <FormControl size="small" sx={{ minWidth: 200 }}>
+                      <Select
+                        value={selectedFieldForSkills}
+                        onChange={(e) => setSelectedFieldForSkills(e.target.value)}
+                        sx={{ height: 40 }}
+                      >
+                        {Object.keys(categoryConfig).map((field) => (
+                          <MenuItem key={field} value={field}>
+                            {field}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={trendingSkillsData[selectedFieldForSkills]} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} interval={0} />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Bar dataKey="growth" fill="#ff9800" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Skills Popularity Section */}
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Box>
+                      <Box display="flex" alignItems="center">
+                        <PieChartIcon sx={{ mr: 1 }} />
+                        <Typography variant="h6">Skill Popularity</Typography>
+                      </Box>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 0.5, mb: 2, fontStyle: 'italic' }}>
+                        Popularity of Skills for selected subcategory
+                      </Typography>
+                    </Box>
+                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                      <Select
+                        value={selectedSubCategory}
+                        onChange={(e) => setSelectedSubCategory(e.target.value)}
+                        sx={{ height: 40 }}
+                      >
+                        {categoryConfig[selectedFieldForSkills].subCategories.map((subCat) => (
+                          <MenuItem key={subCat} value={subCat}>
+                            {subCat}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={getSkillsData(selectedFieldForSkills)}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                        outerRadius={100}
+                        dataKey="value"
+                      >
+                        {getSkillsData(selectedFieldForSkills).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ORANGE_COLORS[index % ORANGE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Legend formatter={(value) => <span style={{ color: '#000000' }}>{value}</span>} />
+                      <RechartsTooltip contentStyle={{ color: '#000000' }} itemStyle={{ color: '#000000' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Paper>
+
         {/* Roadmap Section */}
         <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
           <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', textAlign: 'center' }}>
