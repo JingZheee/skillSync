@@ -60,7 +60,7 @@ export default function CompanyDashboard() {
           Company Dashboard
         </Typography>
         <Typography variant="body1" color="textSecondary">
-          Welcome back, Company Name
+          Welcome back, Tech Corp
         </Typography>
       </Box>
 

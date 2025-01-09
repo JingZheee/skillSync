@@ -21,8 +21,7 @@ const MOCK_USERS = {
 
 export function AuthProvider({ children }) {
   // Default to company user for now
-  const [user, setUser] = useState(MOCK_USERS.company1
-  );
+  const [user, setUser] = useState(MOCK_USERS.student1);
 
   const switchUser = (userType) => {
     setUser(MOCK_USERS[userType]);
