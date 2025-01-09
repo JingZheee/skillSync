@@ -28,6 +28,8 @@ import { useRouter } from "next/navigation";
 import FileUpload from "@/components/FileUpload";
 import ApiService from "@/api/apiService";
 import { API } from "@/api/endpoints";
+import { toast } from "react-toastify";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const steps = [
   "Basic Information",
@@ -61,6 +63,8 @@ export default function CreateChallengePage() {
   const [subFields, setSubFields] = useState([]);
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subFieldsLoading, setSubFieldsLoading] = useState(false);
+  const [tagsLoading, setTagsLoading] = useState(false);
 
   useEffect(() => {
     const fetchFields = async () => {
@@ -80,22 +84,34 @@ export default function CreateChallengePage() {
   }, []);
 
   const fetchFieldDependencies = async (fieldId) => {
+    setSubFieldsLoading(true);
+    setTagsLoading(true);
     try {
       const subFieldsResponse = await ApiService.get(
         API.fields.findAllSub.replace(":id", fieldId)
       );
       const subFieldsData = subFieldsResponse.data.data || [];
 
+      // Add delay before updating state
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
       setSubFields(subFieldsData);
+      setSubFieldsLoading(false);
 
       const tagsResponse = await ApiService.get(
         API.tags.findByField.replace(":fieldId", fieldId)
       );
       const tagsData = tagsResponse.data.data.data || [];
-      console.log(tagsData);
+
+      // Add delay before updating state
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+
       setTags(tagsData);
+      setTagsLoading(false);
     } catch (error) {
       console.error("Error fetching field dependencies:", error);
+      setSubFieldsLoading(false);
+      setTagsLoading(false);
     }
   };
 
@@ -215,13 +231,12 @@ export default function CreateChallengePage() {
 
         console.log("Response:", response);
 
-        // if (response.data.success) {
-        //   router.push("/company/challenges");
-        // } else {
-        //   throw new Error(
-        //     response.data.message || "Failed to create challenge"
-        //   );
-        // }
+        if (response.data.success) {
+          router.push(`/company/challenges/${response.data.data._id}`);
+          toast.success("Challenge created successfully");
+        } else {
+          toast.error(response.data.message || "Failed to create challenge");
+        }
       } catch (error) {
         console.error("Error creating challenge:", error);
       }
@@ -303,12 +318,25 @@ export default function CreateChallengePage() {
                   label="Sub-Field"
                   onChange={(e) => handleChange("subCategory", e.target.value)}
                 >
-                  {Array.isArray(subFields) &&
+                  {subFieldsLoading ? (
+                    <MenuItem>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        width="100%"
+                        py={1}
+                      >
+                        <CircularProgress size={20} />
+                      </Box>
+                    </MenuItem>
+                  ) : (
+                    Array.isArray(subFields) &&
                     subFields.map((subField) => (
                       <MenuItem key={subField._id} value={subField._id}>
                         {subField.name}
                       </MenuItem>
-                    ))}
+                    ))
+                  )}
                 </Select>
               </FormControl>
             )}
@@ -355,8 +383,22 @@ export default function CreateChallengePage() {
                 value={formData.skills}
                 onChange={(_, newValue) => handleChange("skills", newValue)}
                 getOptionLabel={(option) => option.name || option}
+                loading={tagsLoading}
                 renderInput={(params) => (
-                  <TextField {...params} label="Required Skills" required />
+                  <TextField
+                    {...params}
+                    label="Required Skills"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {tagsLoading ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
                 )}
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => {
@@ -610,7 +652,11 @@ export default function CreateChallengePage() {
                     Category
                   </Typography>
                   <Typography>
-                    {formData.category} → {formData.subCategory}
+                    {fields.find((f) => f._id === formData.category)?.name ||
+                      ""}{" "}
+                    →{" "}
+                    {subFields.find((sf) => sf._id === formData.subCategory)
+                      ?.name || ""}
                   </Typography>
                 </Box>
               </Stack>

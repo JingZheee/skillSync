@@ -41,9 +41,7 @@ const challengeSchema = new mongoose.Schema(
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
     hackathon: { type: mongoose.Schema.Types.ObjectId, ref: "Hackathon" },
-    studentChallenges: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "StudentChallenge" },
-    ],
+    submissions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Submission" }],
     deleted_at: Date,
   },
   {

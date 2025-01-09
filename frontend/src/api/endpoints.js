@@ -61,11 +61,8 @@ export const API = {
     findByCompany: "/challenges/company/:companyId",
     findByHackathon: "/challenges/hackathon/:hackathonId",
     findByStudent: "/challenges/student/:studentId",
-    findSubmissions: "/challenges/:id/submissions",
+    findStudentSubmissions: "/challenges/:id/submissions",
     submit: "/challenges/:id/submit",
-    updateSubmission: "/challenges/submission/:submissionId/status",
-    getAllSubmissions: "/challenges/submissions/all",
-    getSubmissionById: "/challenges/submissions/:submissionId",
   },
   courses: {
     findAll: "/courses",

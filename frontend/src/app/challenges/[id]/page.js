@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Container,
   Typography,
@@ -46,9 +46,18 @@ export default function ChallengePage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openSubmitModal, setOpenSubmitModal] = useState(false);
   const { isStudent, user } = useAuth();
+  // Mock data structure updated to match API response
+  const [challenge, setChallenge] = useState({});
 
-  // Only show submit button for students
-  hideSubmitButton = hideSubmitButton || !isStudent;
+  // Only show submit button for students and if they haven't submitted yet
+  const hasSubmitted = useMemo(
+    () =>
+      challenge?.submissions?.some(
+        (submission) => submission.student === user?.id
+      ),
+    [challenge, user]
+  );
+  hideSubmitButton = hideSubmitButton || !isStudent || hasSubmitted;
 
   // Common styles for reuse
   const sectionStyles = {
@@ -81,19 +90,17 @@ export default function ChallengePage({
     transition: "all 0.2s",
   };
 
-  // Mock data structure updated to match API response
-  const [challenge, setChallenge] = useState({});
+  const fetchChallenge = async () => {
+    console.log(id);
+    const response = await APIService.get(
+      API.challenges.findById.replace(":id", id)
+    );
+    const data = await response.data.data;
+    console.log(data);
+    setChallenge(data);
+  };
 
   useEffect(() => {
-    const fetchChallenge = async () => {
-      console.log(id);
-      const response = await APIService.get(
-        API.challenges.findById.replace(":id", id)
-      );
-      const data = await response.data.data;
-      console.log(data);
-      setChallenge(data);
-    };
     fetchChallenge();
   }, [id]);
 
@@ -431,7 +438,7 @@ export default function ChallengePage({
                   </Paper>
 
                   {/* Submit Section - Only show if hideSubmitButton is false */}
-                  {!hideSubmitButton && (
+                  {!hideSubmitButton ? (
                     <Paper elevation={0} sx={sectionStyles}>
                       <Typography
                         variant="body2"
@@ -455,6 +462,19 @@ export default function ChallengePage({
                         Submit Challenge
                       </Button>
                     </Paper>
+                  ) : (
+                    hasSubmitted && (
+                      <Paper elevation={0} sx={sectionStyles}>
+                        <Typography
+                          variant="body2"
+                          color="success.main"
+                          align="center"
+                          fontWeight="medium"
+                        >
+                          You have submitted!
+                        </Typography>
+                      </Paper>
+                    )
                   )}
                 </Stack>
               </Grid>
@@ -469,6 +489,7 @@ export default function ChallengePage({
               challengeId={id}
               studentId={user.id}
               submissionGuidelines={challenge.submissionGuidelines}
+              fetchChallenge={fetchChallenge}
             />
           )}
         </Box>

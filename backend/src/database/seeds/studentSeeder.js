@@ -12,7 +12,10 @@ const students = [
       sub: [], // Will be populated with Web Development and Data Science
     },
     tags: [], // Will be populated with ["JavaScript", "Python", "React"]
-    rank: null, // Will be populated with Bronze rank
+    ranking: null, // Will be populated with Bronze rank
+    challenges: [], // Will be populated later when challenges are assigned
+    submissions: [], // Will be populated later when submissions are made
+    deleted_at: null,
   },
   {
     name: "Emma Wilson",
@@ -24,7 +27,10 @@ const students = [
       sub: [], // Will be populated with UI/UX and Product Design
     },
     tags: [], // Will be populated with ["UI Design", "User Research"]
-    rank: null,
+    ranking: null,
+    challenges: [],
+    submissions: [],
+    deleted_at: null,
   },
   {
     name: "Michael Chen",
@@ -36,7 +42,10 @@ const students = [
       sub: [], // Will be populated with FinTech and Trading
     },
     tags: [], // Will be populated with ["Financial Analysis", "Blockchain"]
-    rank: null,
+    ranking: null,
+    challenges: [],
+    submissions: [],
+    deleted_at: null,
   },
   {
     name: "Sarah Johnson",
@@ -48,7 +57,10 @@ const students = [
       sub: [], // Will be populated with Strategy and Management
     },
     tags: [], // Will be populated with ["Strategic Planning", "Leadership"]
-    rank: null,
+    ranking: null,
+    challenges: [],
+    submissions: [],
+    deleted_at: null,
   },
 ];
 
@@ -68,9 +80,7 @@ async function seedStudents() {
     // Get Bronze rank
     const bronzeRank = await Ranking.findOne({ rankName: "Bronze" });
     if (!bronzeRank) {
-      throw new Error(
-        "Bronze rank not found. Please ensure rankings are seeded first."
-      );
+      throw new Error("Bronze rank not found. Please ensure rankings are seeded first.");
     }
 
     for (const studentData of hashedStudents) {
@@ -115,7 +125,9 @@ async function seedStudents() {
           sub: subFields.map((sf) => sf._id),
         },
         tags: tags.map((tag) => tag._id),
-        rank: bronzeRank._id, // Assign Bronze rank to new students
+        ranking: bronzeRank._id, // Changed from rank to ranking to match model
+        challenges: [], // Initialize empty challenges array
+        submissions: [], // Initialize empty submissions array
       });
     }
 
@@ -126,4 +138,4 @@ async function seedStudents() {
   }
 }
 
-module.exports =  seedStudents ;
+module.exports = seedStudents;

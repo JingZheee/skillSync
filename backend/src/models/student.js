@@ -12,15 +12,10 @@ const studentSchema = new mongoose.Schema(
     },
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
     ranking: { type: mongoose.Schema.Types.ObjectId, ref: "Ranking" },
-    studentCourses: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "StudentCourse" },
-    ],
-    studentChallenges: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "StudentChallenge" },
-    ],
-    studentHackathons: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "StudentHackathon" },
-    ],
+    courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    challenges: [{ type: mongoose.Schema.Types.ObjectId, ref: "Challenge" }],
+    submissions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Submission" }],
+    hackathons: [{ type: mongoose.Schema.Types.ObjectId, ref: "Hackathon" }],
     deleted_at: Date,
   },
   {

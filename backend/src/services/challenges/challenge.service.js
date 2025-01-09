@@ -36,23 +36,13 @@ class ChallengeService extends BaseService {
   }
 
   async findStudentSubmissions(challengeId) {
-    const students = await Student.find({
-      studentChallenges: challengeId,
+    const submissions = await Submission.find({
+      challenge: challengeId,
       deleted_at: null,
-    })
-      .select("-password")
-      .populate({
-        path: "submissions",
-        match: { challenge: challengeId, deleted_at: null },
-        populate: {
-          path: "reviewer",
-          select: "name email",
-        },
-      });
+    }).sort({ created_at: -1 });
 
-    return students;
+    return submissions;
   }
-
   async submitChallenge(challengeId, studentId, uploadedFiles, notes) {
     const student = await Student.findById(studentId);
 
@@ -75,6 +65,14 @@ class ChallengeService extends BaseService {
     await Student.findByIdAndUpdate(studentId, {
       $addToSet: {
         studentChallenges: challengeId,
+        submissions: submission._id,
+      },
+      $set: { updated_at: new Date() },
+    });
+
+    // Update challenge record with the new submission
+    await this.model.findByIdAndUpdate(challengeId, {
+      $addToSet: {
         submissions: submission._id,
       },
       $set: { updated_at: new Date() },
@@ -116,6 +114,7 @@ class ChallengeService extends BaseService {
           { path: "tags" },
           { path: "company" },
           { path: "hackathon" },
+          { path: "submissions" },
         ],
         ...options,
       }
@@ -129,6 +128,7 @@ class ChallengeService extends BaseService {
       { path: "tags" },
       { path: "company" },
       { path: "hackathon" },
+      { path: "submissions" },
     ]);
   }
 
@@ -162,6 +162,8 @@ class ChallengeService extends BaseService {
 
   async delete(id) {
     const challenge = await this.findById(id);
+
+    // Delete associated files
     if (challenge?.challengeFiles?.length) {
       await Promise.all(
         challenge.challengeFiles.map((file) =>
@@ -169,6 +171,15 @@ class ChallengeService extends BaseService {
         )
       );
     }
+
+    // Soft delete associated submissions
+    if (challenge?.submissions?.length) {
+      await Submission.updateMany(
+        { _id: { $in: challenge.submissions } },
+        { deleted_at: new Date() }
+      );
+    }
+
     return await super.delete(id);
   }
 
@@ -225,6 +236,42 @@ class ChallengeService extends BaseService {
     }
 
     return submission;
+  }
+
+  async findOne(id) {
+    const challenge = await super.findById(id, [
+      { path: "field.main" },
+      { path: "field.sub" },
+      { path: "tags" },
+      { path: "company" },
+      { path: "hackathon" },
+    ]);
+
+    if (!challenge) {
+      throw new Error("Challenge not found");
+    }
+
+    // Get all submissions for this challenge
+    const submissions = await Submission.find({
+      challenge: id,
+      deleted_at: null,
+    })
+      .populate([
+        {
+          path: "student",
+          select: "-password",
+        },
+        {
+          path: "reviewer",
+          select: "name email",
+        },
+      ])
+      .sort({ created_at: -1 });
+
+    return {
+      ...challenge.toObject(),
+      submissions,
+    };
   }
 }
 

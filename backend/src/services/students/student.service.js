@@ -11,12 +11,12 @@ class StudentService extends BaseService {
       .findByIdAndUpdate(
         studentId,
         {
-          $addToSet: { studentCourses: courseId },
+          $addToSet: { courses: courseId },
           $set: { updated_at: new Date() },
         },
         { new: true }
       )
-      .populate("studentCourses");
+      .populate("courses");
   }
 
   async unenrollFromCourse(studentId, courseId) {
@@ -24,12 +24,12 @@ class StudentService extends BaseService {
       .findByIdAndUpdate(
         studentId,
         {
-          $pull: { studentCourses: courseId },
+          $pull: { courses: courseId },
           $set: { updated_at: new Date() },
         },
         { new: true }
       )
-      .populate("studentCourses");
+      .populate("courses");
   }
 
   // Hackathon-related methods
@@ -95,9 +95,9 @@ class StudentService extends BaseService {
         "field.sub",
         "ranking",
         "tags",
-        "studentCourses",
-        "studentHackathons",
-        "studentChallenges",
+        "courses",
+        "challenges",
+        "hackathons",
       ],
     });
   }
@@ -108,9 +108,9 @@ class StudentService extends BaseService {
       "field.sub",
       "ranking",
       "tags",
-      "studentCourses",
-      "studentHackathons",
-      "studentChallenges",
+      "courses",
+      "challenges",
+      "hackathons",
     ]);
   }
 }

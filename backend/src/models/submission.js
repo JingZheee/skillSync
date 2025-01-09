@@ -2,9 +2,14 @@ const mongoose = require("mongoose");
 
 const submissionSchema = new mongoose.Schema(
   {
-    studentChallenge: {
+    challenge: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "StudentChallenge",
+      ref: "Challenge",
+      required: true,
+    },
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
       required: true,
     },
     status: {
@@ -22,8 +27,34 @@ const submissionSchema = new mongoose.Schema(
       },
     ],
     notes: String,
+    rating: {
+      overall: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      codeQuality: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      apiDocumentation: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      errorHandling: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+      security: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+    },
     feedback: String,
-    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     reviewedAt: { type: Date },
     submittedAt: { type: Date, default: Date.now },
     deleted_at: Date,

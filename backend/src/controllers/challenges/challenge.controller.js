@@ -1,6 +1,7 @@
 const BaseController = require("../base.controller");
 const createUploader = require("../../middleware/fileUpload");
 const fs = require("fs").promises;
+const { Submission, Student, Challenge } = require("../../models");
 
 class ChallengeController extends BaseController {
   constructor(service) {
@@ -141,17 +142,39 @@ class ChallengeController extends BaseController {
           mimetype: file.mimetype,
         })) || [];
 
-      const data = await this.service.submitChallenge(
-        id,
-        studentId,
+      // Create Submission directly
+      const submission = new Submission({
+        challenge: id,
+        student: studentId,
         submittedFiles,
-        notes
-      );
+        notes,
+        status: "Pending",
+      });
+      await submission.save();
+
+      // Update Student record
+      await Student.findByIdAndUpdate(studentId, {
+        $addToSet: {
+          submissions: submission._id,
+        },
+        $set: { updated_at: new Date() },
+      });
+
+      // Update Challenge record
+      await Challenge.findByIdAndUpdate(id, {
+        $addToSet: {
+          submissions: submission._id,
+        },
+        $set: { updated_at: new Date() },
+      });
 
       res
         .status(201)
         .json(
-          this.responseType.success(data, "Challenge submitted successfully")
+          this.responseType.success(
+            submission,
+            "Challenge submitted successfully"
+          )
         );
     } catch (error) {
       if (req.files) {

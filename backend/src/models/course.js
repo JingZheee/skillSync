@@ -10,7 +10,7 @@ const courseSchema = new mongoose.Schema(
     },
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
     company: { type: mongoose.Schema.Types.ObjectId, ref: "Company" },
-    studentCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "StudentCourse" }],
+    students: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
     deleted_at: Date,
   },
   {

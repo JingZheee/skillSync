@@ -12,7 +12,7 @@ const MOCK_USERS = {
     email: "tech@corp.com",
   },
   student1: {
-    id: "677e97d7aa24659ff6ed625f",
+    id: "677f009e5329086c735af5e9",
     name: "John Doe",
     type: "STUDENT",
     email: "john@student.com",
@@ -21,8 +21,7 @@ const MOCK_USERS = {
 
 export function AuthProvider({ children }) {
   // Default to company user for now
-  const [user, setUser] = useState(MOCK_USERS.company1
-  );
+  const [user, setUser] = useState(MOCK_USERS.company1);
 
   const switchUser = (userType) => {
     setUser(MOCK_USERS[userType]);

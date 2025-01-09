@@ -12,7 +12,7 @@ class CourseService extends BaseService {
 
   async findEnrolledStudents(courseId) {
     const students = await Student.find({
-      studentCourses: courseId,
+      courses: courseId,
       deleted_at: null,
     }).select("-password");
 
@@ -23,22 +23,22 @@ class CourseService extends BaseService {
     return await Student.findByIdAndUpdate(
       studentId,
       {
-        $addToSet: { studentCourses: courseId },
+        $addToSet: { courses: courseId },
         $set: { updated_at: new Date() },
       },
       { new: true }
-    ).populate("studentCourses");
+    ).populate("courses");
   }
 
   async unenrollStudent(courseId, studentId) {
     return await Student.findByIdAndUpdate(
       studentId,
       {
-        $pull: { studentCourses: courseId },
+        $pull: { courses: courseId },
         $set: { updated_at: new Date() },
       },
       { new: true }
-    ).populate("studentCourses");
+    ).populate("courses");
   }
 
   async findAll(filter = {}, options = {}) {

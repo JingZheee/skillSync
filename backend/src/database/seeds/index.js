@@ -16,6 +16,14 @@ async function seedDatabase() {
       throw new Error("Database connection is not ready");
     }
 
+    // Drop all collections
+    console.log("🗑️ Dropping all collections...");
+    const collections = await mongoose.connection.db.collections();
+    for (let collection of collections) {
+      await collection.drop();
+    }
+    console.log("✅ All collections dropped successfully");
+
     // Run seeders
     await seedRankings();
     await seedFields();

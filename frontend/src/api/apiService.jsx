@@ -13,7 +13,7 @@ const client = axios.create({
 });
 
 class APIService {
-  static get(path = "", params = { limit: 999 }) {
+  static get(path = "", params = {}) {
     return client({
       method: "GET",
       url: path,
